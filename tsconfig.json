@@ -2,7 +2,9 @@
 	"compilerOptions": {
 		"paths": {
 			"@/*": ["./src/*"],
-			"@middlewares/*": ["./src/middlewares/*"]
+			"@middlewares/*": ["./src/middlewares/*"],
+			"@prismaClient": ["./prisma/client.ts"],
+			"@controllers/*": ["./src/controllers/*"]
 		},
 		/* Visit https://aka.ms/tsconfig to read more about this file */
 

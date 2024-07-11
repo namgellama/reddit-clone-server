@@ -12,7 +12,9 @@
 	"description": "",
 	"_moduleAliases": {
 		"@": ".",
-		"@middlewares": "./src/middlewares"
+		"@middlewares": "./src/middlewares",
+		"@controllers": "./src/controllers",
+		"@prismaClient": "./prisma/client.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",
