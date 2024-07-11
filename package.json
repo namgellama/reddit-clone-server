@@ -15,6 +15,7 @@
 		"@middlewares": "./src/middlewares",
 		"@controllers": "./src/controllers",
 		"@routes": "./src/routes",
+		"@dtos": "./src/dtos",
 		"@prismaClient": "./prisma/client.ts"
 	},
 	"devDependencies": {

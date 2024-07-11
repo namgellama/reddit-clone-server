@@ -5,6 +5,7 @@
 			"@middlewares/*": ["./src/middlewares/*"],
 			"@controllers/*": ["./src/controllers/*"],
 			"@routes/*": ["./src/routes/*"],
+			"@dots/*": ["./src/dtos/*"],
 			"@prismaClient": ["./prisma/client.ts"]
 		},
 		/* Visit https://aka.ms/tsconfig to read more about this file */
