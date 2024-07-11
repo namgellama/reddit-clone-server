@@ -1,5 +1,9 @@
 {
 	"compilerOptions": {
+		"paths": {
+			"@/*": ["./src/*"],
+			"@middlewares/*": ["./src/middlewares/*"]
+		},
 		/* Visit https://aka.ms/tsconfig to read more about this file */
 
 		/* Projects */
