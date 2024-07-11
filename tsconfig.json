@@ -3,8 +3,9 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@middlewares/*": ["./src/middlewares/*"],
-			"@prismaClient": ["./prisma/client.ts"],
-			"@controllers/*": ["./src/controllers/*"]
+			"@controllers/*": ["./src/controllers/*"],
+			"@routes/*": ["./src/routes/*"],
+			"@prismaClient": ["./prisma/client.ts"]
 		},
 		/* Visit https://aka.ms/tsconfig to read more about this file */
 

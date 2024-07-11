@@ -1,6 +1,6 @@
-import asyncHandler from "@/middlewares/asyncHandler";
-import { Request, Response } from "express";
 import prisma from "@prismaClient";
+import { Request, Response } from "express";
+import asyncHandler from "@middlewares/asyncHandler";
 
 const getPosts = asyncHandler(async (request: Request, response: Response) => {
 	const posts = await prisma.post.findMany();

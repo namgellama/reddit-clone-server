@@ -14,6 +14,7 @@
 		"@": ".",
 		"@middlewares": "./src/middlewares",
 		"@controllers": "./src/controllers",
+		"@routes": "./src/routes",
 		"@prismaClient": "./prisma/client.ts"
 	},
 	"devDependencies": {
