@@ -8,8 +8,10 @@ dotenv.config();
 
 const app = express();
 
+app.use(express.json());
+
 app.get("/", (request: Request, response: Response) => {
-	response.send("Welcome to Reddit Clone API ");
+	response.send("Welcome to Reddit Clone API");
 });
 
 app.use("/api/posts", postRoutes);
