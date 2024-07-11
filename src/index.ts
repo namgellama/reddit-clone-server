@@ -1,13 +1,18 @@
-import express, { Request, Response } from "express";
+import "module-alias/register";
+import { errorHandler, notFound } from "@middlewares/errorMiddleware";
 import dotenv from "dotenv";
+import express, { Request, Response } from "express";
 
 dotenv.config();
 
 const app = express();
 
-app.get("", (request: Request, response: Response) => {
-	response.json("Hello world");
+app.get("/", (request: Request, response: Response) => {
+	response.send("Welcome to Reddit Clone API ");
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8001;
 
