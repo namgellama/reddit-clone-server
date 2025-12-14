@@ -1,12 +1,12 @@
-import express, { Request, Response } from 'express';
-import dotenv from 'dotenv';
-import { createServer } from 'http';
-import { config } from './config';
-import { StatusCodes } from 'http-status-codes';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
-import { logger } from './utils/logger.utils';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
+import { createServer } from 'http';
+import { StatusCodes } from 'http-status-codes';
+import { config } from './config';
+import { logger } from './lib/logger';
+import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 
 dotenv.config();
 

@@ -5,6 +5,7 @@ const envSchema = z.object({
         .enum(['development', 'production', 'test'])
         .default('development'),
     PORT: z.string().default('8000'),
+    DATABASE: z.url(),
 });
 
 export const validateEnv = () => {
