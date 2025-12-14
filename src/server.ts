@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { config } from './config';
 import { StatusCodes } from 'http-status-codes';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
+import { logger } from './utils/logger.utils';
 
 dotenv.config();
 
@@ -24,7 +25,9 @@ app.use(errorHandler);
 const startServer = async () => {
     try {
         server.listen(config.server.port, () => {
-            `Server running on ${config.server.nodeEnv} mode on port ${config.server.port}`;
+            logger.info(
+                `Server running on ${config.server.nodeEnv} mode on port ${config.server.port}`
+            );
         });
     } catch (error) {
         console.error('Failed to start server: ', error);
