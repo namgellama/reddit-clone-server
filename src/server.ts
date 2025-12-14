@@ -5,11 +5,17 @@ import { config } from './config';
 import { StatusCodes } from 'http-status-codes';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 import { logger } from './utils/logger.utils';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
+
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/ping', (req: Request, res: Response) => {
