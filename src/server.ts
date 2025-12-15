@@ -12,6 +12,7 @@ import {
     errorHandler,
     notFoundHandler,
 } from '@/shared/middlewares/error.middleware';
+import passport from '@/shared/config/passport';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ const server = createServer(app);
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // Routes
 app.use('/api/ping', (req: Request, res: Response) => {
