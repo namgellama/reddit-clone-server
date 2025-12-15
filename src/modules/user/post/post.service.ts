@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { prisma } from '@/shared/lib/prisma';
-import { ICreatePostInput } from './post.validations';
 import { apiError } from '@/shared/utils/error.utils';
+import { ICreatePostInput } from './post.validations';
 
-const userPostService = {
+const postService = {
     // Create
     create: async (body: ICreatePostInput) => {
         return await prisma.post.create({
@@ -29,17 +29,17 @@ const userPostService = {
 
     // Update
     update: async (id: string, body: ICreatePostInput) => {
-        await userPostService.getById(id);
+        await postService.getById(id);
 
         return await prisma.post.update({ where: { id }, data: body });
     },
 
     // Delete
     delete: async (id: string) => {
-        await userPostService.getById(id);
+        await postService.getById(id);
 
         await prisma.post.delete({ where: { id } });
     },
 };
 
-export default userPostService;
+export default postService;

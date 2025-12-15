@@ -5,7 +5,7 @@ import userPostService from './post.service';
 import { ICreatePostInput } from './post.validations';
 import { StatusCodes } from 'http-status-codes';
 
-const userPostController = {
+const postController = {
     // Create post
     create: async (
         req: Request<{}, {}, ICreatePostInput>,
@@ -95,4 +95,4 @@ const userPostController = {
     },
 };
 
-export default userPostController;
+export default postController;

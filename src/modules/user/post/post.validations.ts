@@ -5,10 +5,10 @@ const createSchema = z.object({
     description: z.string().min(5, 'Description must be at least 5 characters'),
 });
 
-const userPostValidation = {
+const postValidation = {
     createSchema,
 };
 
-export default userPostValidation;
+export default postValidation;
 
-export type ICreatePostInput = z.infer<typeof userPostValidation.createSchema>;
+export type ICreatePostInput = z.infer<typeof postValidation.createSchema>;

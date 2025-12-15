@@ -34,4 +34,4 @@ router.delete(
     userPostController.delete
 );
 
-export { router as userPostRoutes };
+export { router as postRoutes };

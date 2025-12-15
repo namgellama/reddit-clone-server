@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import { userPostRoutes } from '@/modules/user/post/post.route';
+import { postRoutes } from '@/modules/user/post/post.route';
 
 const router = Router();
 
-router.use('/posts', userPostRoutes);
+router.use('/posts', postRoutes);
 
 export { router as userRoutes };
