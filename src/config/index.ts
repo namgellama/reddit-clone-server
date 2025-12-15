@@ -10,5 +10,5 @@ export const config = {
         port: parseInt(env.PORT, 10),
         nodeEnv: env.NODE_ENV,
     },
-    database: { url: env.DATABASE },
+    database: { url: env.DATABASE_URL },
 };
