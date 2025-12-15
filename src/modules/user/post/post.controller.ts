@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { sendResponse } from '@/utils/response.utils';
+import { sendResponse } from '@/shared/utils/response.utils';
 import userPostService from './post.service';
 import { ICreatePostInput } from './post.validations';
 
@@ -26,6 +26,21 @@ const userPostController = {
             const posts = await userPostService.getAll();
 
             sendResponse(res, 'Posts fetched successfully', posts);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Get post by id
+    getById: async (
+        req: Request<{ id: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const post = await userPostService.getById(req.params.id);
+
+            sendResponse(res, 'Post fetched successfully', post);
         } catch (error) {
             next(error);
         }
