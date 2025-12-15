@@ -1,15 +1,15 @@
 import { Router } from 'express';
 
 import { validate } from '@/shared/middlewares/validate.middleware';
-import userPostController from './post.controller';
-import postValidation from './post.validations';
 import commonValidation from '@/shared/validations/common.validation';
+import userPostController from './post.controller';
+import userPostValidation from './post.validations';
 
 const router = Router();
 
 router.post(
     '/',
-    validate(postValidation.createSchema),
+    validate(userPostValidation.createSchema),
     userPostController.create
 );
 
@@ -19,6 +19,13 @@ router.get(
     '/:id',
     validate(commonValidation.idParamsSchema, 'params'),
     userPostController.getById
+);
+
+router.put(
+    '/:id',
+    validate(commonValidation.idParamsSchema, 'params'),
+    validate(userPostValidation.createSchema),
+    userPostController.update
 );
 
 export { router as userPostRoutes };

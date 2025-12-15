@@ -1,7 +1,8 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { prisma } from '@/shared/lib/prisma';
 import { ICreatePostInput } from './post.validations';
 import { apiError } from '@/shared/utils/error.utils';
-import { StatusCodes } from 'http-status-codes';
 
 const userPostService = {
     // Create
@@ -24,6 +25,12 @@ const userPostService = {
             throw apiError(StatusCodes.NOT_FOUND, 'Post not found');
 
         return existingPost;
+    },
+
+    update: async (id: string, body: ICreatePostInput) => {
+        await userPostService.getById(id);
+
+        return await prisma.post.update({ where: { id }, data: body });
     },
 };
 

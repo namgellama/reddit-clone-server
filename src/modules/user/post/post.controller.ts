@@ -38,9 +38,29 @@ const userPostController = {
         next: NextFunction
     ) => {
         try {
-            const post = await userPostService.getById(req.params.id);
+            const { id } = req.params;
+
+            const post = await userPostService.getById(id);
 
             sendResponse(res, 'Post fetched successfully', post);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Update post
+    update: async (
+        req: Request<{ id: string }, {}, ICreatePostInput>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+            const body = req.body;
+
+            const post = await userPostService.update(id, body);
+
+            sendResponse(res, 'Post updated successfully', post);
         } catch (error) {
             next(error);
         }
