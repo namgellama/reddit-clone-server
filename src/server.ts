@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { config } from './config';
 import { logger } from './lib/logger';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
+import { indexRoutes } from './routes';
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use(cookieParser());
 app.use('/api/ping', (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({ message: 'Pong!' });
 });
+
+app.use('/api/v1', indexRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);
