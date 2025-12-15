@@ -27,10 +27,18 @@ const userPostService = {
         return existingPost;
     },
 
+    // Update
     update: async (id: string, body: ICreatePostInput) => {
         await userPostService.getById(id);
 
         return await prisma.post.update({ where: { id }, data: body });
+    },
+
+    // Delete
+    delete: async (id: string) => {
+        await userPostService.getById(id);
+
+        await prisma.post.delete({ where: { id } });
     },
 };
 

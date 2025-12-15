@@ -28,4 +28,10 @@ router.put(
     userPostController.update
 );
 
+router.delete(
+    '/:id',
+    validate(commonValidation.idParamsSchema, 'params'),
+    userPostController.delete
+);
+
 export { router as userPostRoutes };
