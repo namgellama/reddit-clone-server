@@ -4,10 +4,14 @@ import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { StatusCodes } from 'http-status-codes';
-import { config } from './config';
-import { logger } from './lib/logger';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
-import { indexRoutes } from './routes';
+
+import { indexRoutes } from '@/routes';
+import { config } from '@/shared/config';
+import { logger } from '@/shared/lib/logger';
+import {
+    errorHandler,
+    notFoundHandler,
+} from '@/shared/middlewares/error.middleware';
 
 dotenv.config();
 
