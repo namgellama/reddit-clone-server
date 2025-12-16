@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+
 import { validateEnv } from './env-validator';
 
 dotenv.config();
@@ -11,4 +12,16 @@ export const config = {
         nodeEnv: env.NODE_ENV,
     },
     database: { url: env.DATABASE_URL },
+    google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        callbackUrl: env.GOOGLE_CALLBACK_URL,
+        clientRedirectUrl: env.GOOGLE_CLIENT_REDIRECT_URL,
+    },
+    jwt: {
+        accessSecret: env.JWT_ACCESS_SECRET,
+        accessExpiry: env.JWT_ACCESS_EXPIRY,
+        refreshSecret: env.JWT_REFRESH_SECRET,
+        refreshExpiry: env.JWT_REFRESH_EXPIRY,
+    },
 };
