@@ -17,10 +17,9 @@ const getSecret = (tokenType: TokenType) => {
 };
 
 const getExpiry = (tokenType: TokenType) => {
-    if (tokenType === 'access')
-        return ms(config.jwt.accessExpiry as StringValue);
+    if (tokenType === 'access') return config.jwt.accessExpiry;
 
-    return ms(config.jwt.refreshExpiry as StringValue);
+    return config.jwt.refreshExpiry;
 };
 
 export const signJwt = (payload: JwtPayload, tokenType: TokenType) => {

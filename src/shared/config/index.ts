@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { StringValue } from 'ms';
 
 import { validateEnv } from './env-validator';
 
@@ -20,8 +21,8 @@ export const config = {
     },
     jwt: {
         accessSecret: env.JWT_ACCESS_SECRET,
-        accessExpiry: env.JWT_ACCESS_EXPIRY,
+        accessExpiry: env.JWT_ACCESS_EXPIRY as StringValue,
         refreshSecret: env.JWT_REFRESH_SECRET,
-        refreshExpiry: env.JWT_REFRESH_EXPIRY,
+        refreshExpiry: env.JWT_REFRESH_EXPIRY as StringValue,
     },
 };
