@@ -1,23 +1,20 @@
-import { Request } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import passport from 'passport';
-import { Strategy as JwtStrategy } from 'passport-jwt';
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 
-import { prisma } from '@/shared/lib/prisma';
-import { config } from '.';
+import userService from '@/modules/user/user/user.service';
+import { config } from '..';
 
 passport.use(
-    'refreshToken',
+    'accessToken',
     new JwtStrategy(
         {
-            jwtFromRequest: (req: Request) => req.cookies?.refreshToken,
-            secretOrKey: config.jwt.refreshSecret,
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            secretOrKey: config.jwt.accessSecret,
         },
         async (payload: JwtPayload, done) => {
             try {
-                const user = await prisma.user.findUnique({
-                    where: { id: payload.sub },
-                });
+                const user = await userService.getById(payload.sub!);
 
                 if (!user) {
                     return done(null, false);

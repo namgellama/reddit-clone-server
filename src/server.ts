@@ -8,8 +8,8 @@ import passport from 'passport';
 
 import { indexRoutes } from '@/routes';
 import { config } from '@/shared/config';
-import '@/shared/config/passport-access';
-import '@/shared/config/passport-refresh';
+import '@/shared/config/strategies/passport-access';
+import '@/shared/config/strategies/passport-refresh';
 import { logger } from '@/shared/lib/logger';
 import {
     errorHandler,
