@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 import { prisma } from '@/shared/lib/prisma';
 import { ICreateUserInput } from './user.validation';
 
@@ -22,6 +24,11 @@ const userService = {
     // Get by username
     getByUsername: async (username: string) => {
         return await prisma.user.findUnique({ where: { username } });
+    },
+
+    // Get me
+    getMe: async (req: Request) => {
+        return req.user;
     },
 };
 
