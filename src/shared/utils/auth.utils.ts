@@ -25,18 +25,10 @@ export const setRefreshToken = (res: Response, token: string) => {
     });
 };
 
-// export const setToken = (
-//     res: Response,
-//     token: string,
-//     tokenType: TokenType
-// ) => {
-//     res.cookie(tokenType === 'access' ? 'accessToken' : 'refreshToken', token, {
-//         httpOnly: true,
-//         secure: config.server.nodeEnv === 'production',
-//         sameSite: config.server.nodeEnv === 'production' ? 'none' : 'lax',
-//         maxAge:
-//             tokenType === 'access'
-//                 ? ms(config.jwt.accessExpiry as StringValue)
-//                 : ms(config.jwt.refreshExpiry as StringValue),
-//     });
-// };
+export const clearRefreshToken = (res: Response) => {
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: config.server.nodeEnv === 'production',
+        sameSite: config.server.nodeEnv === 'production' ? 'none' : 'lax',
+    });
+};

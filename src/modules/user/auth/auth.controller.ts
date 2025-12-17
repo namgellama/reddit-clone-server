@@ -43,15 +43,23 @@ const authController = {
         }
     },
 
+    // Logout
+    logout: (req: Request, res: Response, next: NextFunction) => {
+        try {
+            authService.logout(res);
+
+            sendResponse(res, 'User logged out successfully', {});
+        } catch (error) {
+            next(error);
+        }
+    },
+
     // Refresh token
-    refreshToken: async (req: Request, res: Response, next: NextFunction) => {
+    refreshToken: (req: Request, res: Response, next: NextFunction) => {
         try {
             const user = req.user as User;
 
-            const { accessToken } = await authService.refreshToken(
-                res,
-                user.id
-            );
+            const { accessToken } = authService.refreshToken(res, user.id);
 
             sendResponse(res, 'Token refreshed successfully', { accessToken });
         } catch (error) {

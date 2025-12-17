@@ -20,6 +20,8 @@ router.post(
     authController.login
 );
 
+router.post('/logout', authController.logout);
+
 router.post('/refresh-token', refreshProtect, authController.refreshToken);
 
 export { router as authRoutes };

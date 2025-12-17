@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { signJwt } from '@/shared/lib/jwt';
 import {
+    clearRefreshToken,
     comparePassword,
     hashPassword,
     setRefreshToken,
@@ -65,8 +66,13 @@ const authService = {
         return { accessToken };
     },
 
+    // Logout
+    logout: (res: Response) => {
+        clearRefreshToken(res);
+    },
+
     // Refresh token
-    refreshToken: async (res: Response, userId: string) => {
+    refreshToken: (res: Response, userId: string) => {
         const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
 
         return { accessToken };
