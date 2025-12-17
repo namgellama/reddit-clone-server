@@ -7,12 +7,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { indexRoutes } from '@/routes';
 import { config } from '@/shared/config';
+import passport from '@/shared/config/passport-access';
 import { logger } from '@/shared/lib/logger';
 import {
     errorHandler,
     notFoundHandler,
 } from '@/shared/middlewares/error.middleware';
-import passport from '@/shared/config/passport';
 
 dotenv.config();
 
