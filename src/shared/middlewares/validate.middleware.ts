@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from './error.middleware';
 import { ZodType } from 'zod';
+
+import { AppError } from './error.middleware';
 
 interface ValidationErrorItem {
     path: string;

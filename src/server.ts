@@ -4,10 +4,17 @@ import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { StatusCodes } from 'http-status-codes';
-import { config } from './config';
-import { logger } from './lib/logger';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
-import { indexRoutes } from './routes';
+import passport from 'passport';
+
+import { indexRoutes } from '@/routes';
+import { config } from '@/shared/config';
+import '@/shared/config/strategies/passport-access';
+import '@/shared/config/strategies/passport-refresh';
+import { logger } from '@/shared/lib/logger';
+import {
+    errorHandler,
+    notFoundHandler,
+} from '@/shared/middlewares/error.middleware';
 
 dotenv.config();
 
@@ -17,6 +24,7 @@ const server = createServer(app);
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // Routes
 app.use('/api/ping', (req: Request, res: Response) => {

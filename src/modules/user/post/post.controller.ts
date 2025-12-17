@@ -1,8 +1,34 @@
 import { NextFunction, Request, Response } from 'express';
-import userPostService from './post.service';
-import { sendResponse } from '@/utils/response.utils';
 
-const userPostController = {
+import { sendResponse } from '@/shared/utils/response.utils';
+import userPostService from './post.service';
+import { ICreatePostInput } from './post.validations';
+import { StatusCodes } from 'http-status-codes';
+
+const postController = {
+    // Create post
+    create: async (
+        req: Request<{}, {}, ICreatePostInput>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const userId = req.user?.id!;
+
+            const newPost = await userPostService.create(req.body, userId);
+
+            sendResponse(
+                res,
+                'Post created successfully',
+                newPost,
+                StatusCodes.CREATED
+            );
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Get all posts
     getAll: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const posts = await userPostService.getAll();
@@ -12,6 +38,65 @@ const userPostController = {
             next(error);
         }
     },
+
+    // Get post by id
+    getById: async (
+        req: Request<{ id: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+
+            const post = await userPostService.getById(id);
+
+            sendResponse(res, 'Post fetched successfully', post);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Update post
+    update: async (
+        req: Request<{ id: string }, {}, ICreatePostInput>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+            const body = req.body;
+            const userId = req.user?.id!;
+
+            const post = await userPostService.update(id, body, userId);
+
+            sendResponse(res, 'Post updated successfully', post);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Delete post
+    delete: async (
+        req: Request<{ id: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user?.id!;
+
+            await userPostService.delete(id, userId);
+
+            sendResponse(
+                res,
+                'Post deleted successfully',
+                {},
+                StatusCodes.NO_CONTENT
+            );
+        } catch (error) {
+            next(error);
+        }
+    },
 };
 
-export default userPostController;
+export default postController;

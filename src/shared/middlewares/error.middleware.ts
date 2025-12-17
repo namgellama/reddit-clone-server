@@ -1,6 +1,7 @@
-import { config } from '@/config';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+
+import { config } from '@/shared/config';
 
 export interface AppError extends Error {
     statusCode?: number;

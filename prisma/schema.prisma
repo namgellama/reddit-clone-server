@@ -18,5 +18,21 @@ model Post {
   title       String   @db.VarChar(255)
   description String   @db.Text()
   createdAt   DateTime @default(now())
-  updated     DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique @db.VarChar(100)
+  firstName String   @db.VarChar(30)
+  lastName  String   @db.VarChar(30)
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
 }
