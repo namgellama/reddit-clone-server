@@ -13,7 +13,9 @@ const postController = {
         next: NextFunction
     ) => {
         try {
-            const newPost = await userPostService.create(req.body);
+            const userId = req.user?.id!;
+
+            const newPost = await userPostService.create(req.body, userId);
 
             sendResponse(
                 res,
@@ -63,8 +65,9 @@ const postController = {
         try {
             const { id } = req.params;
             const body = req.body;
+            const userId = req.user?.id!;
 
-            const post = await userPostService.update(id, body);
+            const post = await userPostService.update(id, body, userId);
 
             sendResponse(res, 'Post updated successfully', post);
         } catch (error) {
@@ -80,8 +83,9 @@ const postController = {
     ) => {
         try {
             const { id } = req.params;
+            const userId = req.user?.id!;
 
-            await userPostService.delete(id);
+            await userPostService.delete(id, userId);
 
             sendResponse(
                 res,

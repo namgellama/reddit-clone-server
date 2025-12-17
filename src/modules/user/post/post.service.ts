@@ -1,14 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { prisma } from '@/shared/lib/prisma';
+import { ensureOwner } from '@/shared/utils/ensure-owner.utils';
 import { apiError } from '@/shared/utils/error.utils';
 import { ICreatePostInput } from './post.validations';
 
 const postService = {
     // Create
-    create: async (body: ICreatePostInput) => {
+    create: async (body: ICreatePostInput, userId: string) => {
         return await prisma.post.create({
-            data: body,
+            data: {
+                ...body,
+                userId,
+            },
         });
     },
 
@@ -28,15 +32,17 @@ const postService = {
     },
 
     // Update
-    update: async (id: string, body: ICreatePostInput) => {
-        await postService.getById(id);
+    update: async (id: string, body: ICreatePostInput, userId: string) => {
+        const existingPost = await postService.getById(id);
+        ensureOwner(existingPost.userId, userId);
 
-        return await prisma.post.update({ where: { id }, data: body });
+        return await prisma.post.update({ where: { id, userId }, data: body });
     },
 
     // Delete
-    delete: async (id: string) => {
-        await postService.getById(id);
+    delete: async (id: string, userId: string) => {
+        const existingPost = await postService.getById(id);
+        ensureOwner(existingPost.id, userId);
 
         await prisma.post.delete({ where: { id } });
     },

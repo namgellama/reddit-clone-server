@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { protect } from '@/shared/middlewares/auth.middleware';
 import { validate } from '@/shared/middlewares/validate.middleware';
 import commonValidation from '@/shared/validations/common.validation';
 import userPostController from './post.controller';
@@ -9,6 +10,7 @@ const router = Router();
 
 router.post(
     '/',
+    protect,
     validate(userPostValidation.createSchema),
     userPostController.create
 );
@@ -23,6 +25,7 @@ router.get(
 
 router.put(
     '/:id',
+    protect,
     validate(commonValidation.idParamsSchema, 'params'),
     validate(userPostValidation.createSchema),
     userPostController.update
@@ -30,6 +33,7 @@ router.put(
 
 router.delete(
     '/:id',
+    protect,
     validate(commonValidation.idParamsSchema, 'params'),
     userPostController.delete
 );
