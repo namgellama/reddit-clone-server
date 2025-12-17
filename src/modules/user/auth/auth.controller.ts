@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { User } from '@/generated/prisma';
 import { sendResponse } from '@/shared/utils/response.utils';
 import { ICreateUserInput } from '../user/user.validation';
 import authService from './auth.service';
@@ -37,6 +38,22 @@ const authController = {
             const { accessToken } = await authService.login(res, req.body);
 
             sendResponse(res, 'User logged in successfully', { accessToken });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Refresh token
+    refreshToken: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const user = req.user as User;
+
+            const { accessToken } = await authService.refreshToken(
+                res,
+                user.id
+            );
+
+            sendResponse(res, 'Token refreshed successfully', { accessToken });
         } catch (error) {
             next(error);
         }

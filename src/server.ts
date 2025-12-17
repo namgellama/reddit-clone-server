@@ -4,10 +4,12 @@ import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { StatusCodes } from 'http-status-codes';
+import passport from 'passport';
 
 import { indexRoutes } from '@/routes';
 import { config } from '@/shared/config';
-import passport from '@/shared/config/passport-access';
+import '@/shared/config/passport-access';
+import '@/shared/config/passport-refresh';
 import { logger } from '@/shared/lib/logger';
 import {
     errorHandler,

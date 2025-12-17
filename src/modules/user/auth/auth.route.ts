@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { refreshProtect } from '@/shared/middlewares/auth.middleware';
 import { validate } from '@/shared/middlewares/validate.middleware';
 import userValidation from '../user/user.validation';
 import authController from './auth.controller';
@@ -18,5 +19,7 @@ router.post(
     validate(authValidation.loginSchema),
     authController.login
 );
+
+router.post('/refresh-token', refreshProtect, authController.refreshToken);
 
 export { router as authRoutes };

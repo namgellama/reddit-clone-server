@@ -51,12 +51,25 @@ const authService = {
         if (!isMatch)
             throw new ApiError('Invalid credentials', StatusCodes.UNAUTHORIZED);
 
-        const accessToken = signJwt({ id: existingUser.id }, 'access');
-        const refreshToken = signJwt({ id: existingUser.id }, 'refresh');
+        const accessToken = signJwt(
+            { sub: existingUser.id, type: 'access' },
+            'access'
+        );
+        const refreshToken = signJwt(
+            { sub: existingUser.id, type: 'refresh' },
+            'refresh'
+        );
 
         setRefreshToken(res, refreshToken);
 
-        return { accessToken: accessToken };
+        return { accessToken };
+    },
+
+    // Refresh token
+    refreshToken: async (res: Response, userId: string) => {
+        const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
+
+        return { accessToken };
     },
 };
 

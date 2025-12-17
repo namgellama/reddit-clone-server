@@ -6,7 +6,8 @@ import { config } from '@/shared/config';
 export type TokenType = 'access' | 'refresh';
 
 interface JwtPayload {
-    id: string;
+    sub: string;
+    type: 'access' | 'refresh';
 }
 
 const getSecret = (tokenType: TokenType) => {
