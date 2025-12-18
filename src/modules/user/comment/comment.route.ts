@@ -14,4 +14,11 @@ router.post(
     commentController.create
 );
 
+router.post(
+    '/:commentId/replies',
+    protect,
+    validate(commentValidation.createSchema),
+    commentController.reply
+);
+
 export { router as commentRoutes };
