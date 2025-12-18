@@ -83,6 +83,26 @@ const commentController = {
             next(error);
         }
     },
+
+    // Get all comments replies
+    getAllReplies: async (
+        req: Request<{ postId: string; commentId: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { postId, commentId } = req.params;
+
+            const comments = await commentService.getAllReplies(
+                postId,
+                commentId
+            );
+
+            sendResponse(res, 'Comment replies fetched successfully', comments);
+        } catch (error) {
+            next(error);
+        }
+    },
 };
 
 export default commentController;

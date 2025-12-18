@@ -23,4 +23,6 @@ router.post(
 
 router.get('/', protect, commentController.getAll);
 
+router.get('/:commentId/replies', protect, commentController.getAllReplies);
+
 export { router as commentRoutes };

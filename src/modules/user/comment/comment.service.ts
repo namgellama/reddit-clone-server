@@ -33,12 +33,11 @@ const commentService = {
 
         const existingComment = await commentService.getById(commentId);
 
-        if (existingComment.postId !== postId) {
+        if (existingComment.postId !== postId)
             throw new ApiError(
                 'Comment does not belong to this post',
                 StatusCodes.BAD_REQUEST
             );
-        }
 
         if (existingComment.parentId)
             throw new ApiError(
@@ -61,6 +60,23 @@ const commentService = {
         await postService.getById(postId);
 
         return await prisma.comment.findMany({ where: { postId } });
+    },
+
+    // Get all
+    getAllReplies: async (postId: string, commentId: string) => {
+        await postService.getById(postId);
+
+        const existingComment = await commentService.getById(commentId);
+
+        if (existingComment.postId !== postId)
+            throw new ApiError(
+                'Comment does not belong to this post',
+                StatusCodes.BAD_REQUEST
+            );
+
+        return await prisma.comment.findMany({
+            where: { postId, parentId: commentId },
+        });
     },
 
     // Get by id
