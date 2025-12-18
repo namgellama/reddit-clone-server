@@ -56,6 +56,13 @@ const commentService = {
         });
     },
 
+    // Get all
+    getAll: async (postId: string) => {
+        await postService.getById(postId);
+
+        return await prisma.comment.findMany({ where: { postId } });
+    },
+
     // Get by id
     getById: async (id: string) => {
         const existingComment = await prisma.comment.findUnique({
