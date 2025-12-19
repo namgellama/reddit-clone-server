@@ -103,6 +103,26 @@ const commentController = {
             next(error);
         }
     },
+
+    // Get comment by id
+    getById: async (
+        req: Request<{ postId: string; commentId: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { postId, commentId } = req.params;
+
+            const existingComment = await commentService.getById(
+                postId,
+                commentId
+            );
+
+            sendResponse(res, 'Comment fetched successfully', existingComment);
+        } catch (error) {
+            next(error);
+        }
+    },
 };
 
 export default commentController;
