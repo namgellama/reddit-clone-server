@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { sendResponse } from '@/shared/utils/response.utils';
-import userPostService from './post.service';
-import { ICreatePostInput } from './post.validations';
 import { StatusCodes } from 'http-status-codes';
+import postService from './post.service';
+import { ICreatePostInput } from './post.validations';
 
 const postController = {
     // Create post
@@ -15,7 +15,7 @@ const postController = {
         try {
             const userId = req.user?.id!;
 
-            const newPost = await userPostService.create(req.body, userId);
+            const newPost = await postService.create(req.body, userId);
 
             sendResponse(
                 res,
@@ -31,7 +31,7 @@ const postController = {
     // Get all posts
     getAll: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const posts = await userPostService.getAll();
+            const posts = await postService.getAll();
 
             sendResponse(res, 'Posts fetched successfully', posts);
         } catch (error) {
@@ -48,7 +48,7 @@ const postController = {
         try {
             const { id } = req.params;
 
-            const post = await userPostService.getById(id);
+            const post = await postService.getById(id);
 
             sendResponse(res, 'Post fetched successfully', post);
         } catch (error) {
@@ -67,7 +67,7 @@ const postController = {
             const body = req.body;
             const userId = req.user?.id!;
 
-            const post = await userPostService.update(id, body, userId);
+            const post = await postService.update(id, body, userId);
 
             sendResponse(res, 'Post updated successfully', post);
         } catch (error) {
@@ -85,7 +85,7 @@ const postController = {
             const { id } = req.params;
             const userId = req.user?.id!;
 
-            await userPostService.delete(id, userId);
+            await postService.delete(id, userId);
 
             sendResponse(
                 res,
