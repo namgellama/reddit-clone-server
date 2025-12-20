@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
+import { sendResponse } from '@/shared/utils/response.utils';
 import commentService from './comment.service';
 import { ICreateCommentInput } from './comment.validation';
-import { sendResponse } from '@/shared/utils/response.utils';
-import { StatusCodes } from 'http-status-codes';
 
 const commentController = {
     // Create comment
@@ -119,6 +119,34 @@ const commentController = {
             );
 
             sendResponse(res, 'Comment fetched successfully', existingComment);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Update comment
+    update: async (
+        req: Request<
+            { postId: string; commentId: string },
+            {},
+            ICreateCommentInput
+        >,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { postId, commentId } = req.params;
+            const body = req.body;
+            const userId = req.user?.id!;
+
+            const updatedComment = await commentService.update(
+                body,
+                postId,
+                commentId,
+                userId
+            );
+
+            sendResponse(res, 'Comment updated successfully', updatedComment);
         } catch (error) {
             next(error);
         }

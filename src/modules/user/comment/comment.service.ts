@@ -78,6 +78,20 @@ const commentService = {
 
         return existingComment;
     },
+
+    // Update
+    update: async (
+        body: ICreateCommentInput,
+        postId: string,
+        commentId: string
+    ) => {
+        const existingComment = await commentService.getById(postId, commentId);
+
+        return await prisma.comment.update({
+            where: { id: commentId, postId },
+            data: body,
+        });
+    },
 };
 
 export default commentService;

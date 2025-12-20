@@ -27,4 +27,8 @@ router.get('/:commentId/replies', protect, commentController.getAllReplies);
 
 router.get('/:commentId', protect, commentController.getById);
 
+router.get('/:commentId', protect, commentController.getById);
+
+router.put('/:commentId', protect, commentController.update);
+
 export { router as commentRoutes };
