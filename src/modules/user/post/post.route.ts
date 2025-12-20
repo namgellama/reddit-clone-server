@@ -3,39 +3,39 @@ import { Router } from 'express';
 import { protect } from '@/shared/middlewares/auth.middleware';
 import { validate } from '@/shared/middlewares/validate.middleware';
 import commonValidation from '@/shared/validations/common.validation';
-import userPostController from './post.controller';
-import userPostValidation from './post.validations';
+import postController from './post.controller';
+import postValidation from './post.validations';
 
 const router = Router();
 
 router.post(
     '/',
     protect,
-    validate(userPostValidation.createSchema),
-    userPostController.create
+    validate(postValidation.createSchema),
+    postController.create
 );
 
-router.get('/', userPostController.getAll);
+router.get('/', postController.getAll);
 
 router.get(
     '/:id',
     validate(commonValidation.idParamsSchema, 'params'),
-    userPostController.getById
+    postController.getById
 );
 
 router.put(
     '/:id',
     protect,
     validate(commonValidation.idParamsSchema, 'params'),
-    validate(userPostValidation.createSchema),
-    userPostController.update
+    validate(postValidation.createSchema),
+    postController.update
 );
 
 router.delete(
     '/:id',
     protect,
     validate(commonValidation.idParamsSchema, 'params'),
-    userPostController.delete
+    postController.delete
 );
 
 export { router as postRoutes };

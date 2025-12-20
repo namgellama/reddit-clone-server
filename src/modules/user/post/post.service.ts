@@ -24,6 +24,7 @@ const postService = {
                     select: {
                         comments: true,
                         upvotes: true,
+                        downvotes: true,
                     },
                 },
             },
@@ -33,6 +34,7 @@ const postService = {
             ...rest,
             commentsCount: _count.comments,
             upvotesCount: _count.upvotes,
+            downvotesCount: _count.downvotes,
         }));
     },
 
@@ -47,6 +49,7 @@ const postService = {
                             select: {
                                 replies: true,
                                 upvotes: true,
+                                downvotes: true,
                             },
                         },
                     },
@@ -55,6 +58,7 @@ const postService = {
                     select: {
                         comments: true,
                         upvotes: true,
+                        downvotes: true,
                     },
                 },
             },
@@ -71,9 +75,11 @@ const postService = {
                 ...rest,
                 repliesCount: _count.replies,
                 upvotesCount: _count.upvotes,
+                downvotesCount: _count.downvotes,
             })),
             commentsCount: _count.comments,
             upvotesCount: _count.upvotes,
+            downvotesCount: _count.downvotes,
         };
     },
 
