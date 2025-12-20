@@ -25,6 +25,7 @@ model User {
 
   posts    Post[]
   comments Comment[]
+  upvotes  Upvote[]
 }
 
 model Post {
@@ -38,6 +39,7 @@ model Post {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   comments Comment[]
+  upvotes  Upvote[]
 }
 
 model Comment {
@@ -53,12 +55,32 @@ model Comment {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   parentId String?
-  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies  Comment[] @relation("CommentReplies")
+  parent   Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+
+  replies Comment[] @relation("CommentReplies")
+  upvotes Upvote[]
 
   @@index([postId])
   @@index([userId])
   @@index([parentId])
   @@index([createdAt])
   @@index([postId, parentId, createdAt])
+}
+
+model Upvote {
+  id String @id @default(uuid())
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@index([postId])
+  @@index([commentId])
 }
