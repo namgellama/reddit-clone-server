@@ -1,8 +1,10 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { prisma } from '@/shared/lib/prisma';
+import { ensureOwner } from '@/shared/utils/ensure-owner.utils';
+import { ApiError, apiError } from '@/shared/utils/error.utils';
 import postService from '../post/post.service';
 import { ICreateCommentInput } from './comment.validation';
-import { ApiError, apiError } from '@/shared/utils/error.utils';
-import { StatusCodes } from 'http-status-codes';
 
 const commentService = {
     // Create
@@ -83,14 +85,26 @@ const commentService = {
     update: async (
         body: ICreateCommentInput,
         postId: string,
-        commentId: string
+        commentId: string,
+        userId: string
     ) => {
         const existingComment = await commentService.getById(postId, commentId);
+
+        ensureOwner(existingComment.userId, userId);
 
         return await prisma.comment.update({
             where: { id: commentId, postId },
             data: body,
         });
+    },
+
+    // Delete
+    delete: async (postId: string, commentId: string, userId: string) => {
+        const existingComment = await commentService.getById(postId, commentId);
+
+        ensureOwner(existingComment.userId, userId);
+
+        await prisma.comment.delete({ where: { id: commentId, postId } });
     },
 };
 

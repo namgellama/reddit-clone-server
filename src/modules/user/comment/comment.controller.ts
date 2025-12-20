@@ -137,7 +137,7 @@ const commentController = {
         try {
             const { postId, commentId } = req.params;
             const body = req.body;
-            const userId = req.user?.id!;
+            const userId = req.user!.id;
 
             const updatedComment = await commentService.update(
                 body,
@@ -147,6 +147,29 @@ const commentController = {
             );
 
             sendResponse(res, 'Comment updated successfully', updatedComment);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Delete comment
+    delete: async (
+        req: Request<{ postId: string; commentId: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { postId, commentId } = req.params;
+            const userId = req.user!.id;
+
+            await commentService.delete(postId, commentId, userId);
+
+            sendResponse(
+                res,
+                'Comment deleted successfully',
+                {},
+                StatusCodes.NO_CONTENT
+            );
         } catch (error) {
             next(error);
         }

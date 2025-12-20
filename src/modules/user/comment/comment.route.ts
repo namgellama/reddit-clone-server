@@ -31,4 +31,6 @@ router.get('/:commentId', protect, commentController.getById);
 
 router.put('/:commentId', protect, commentController.update);
 
+router.delete('/:commentId', protect, commentController.delete);
+
 export { router as commentRoutes };
