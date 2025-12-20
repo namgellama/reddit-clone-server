@@ -33,7 +33,10 @@ const commentService = {
     ) => {
         await postService.getById(postId);
 
-        const existingComment = await commentService.getById(postId, commentId);
+        const existingComment = await commentService.getByPostIdAndCommentId(
+            postId,
+            commentId
+        );
 
         if (existingComment.parentId)
             throw new ApiError(
@@ -62,15 +65,15 @@ const commentService = {
     getAllReplies: async (postId: string, commentId: string) => {
         await postService.getById(postId);
 
-        await commentService.getById(postId, commentId);
+        await commentService.getByPostIdAndCommentId(postId, commentId);
 
         return await prisma.comment.findMany({
             where: { postId, parentId: commentId },
         });
     },
 
-    // Get by id
-    getById: async (postId: string, commentId: string) => {
+    // Get by post id and comment id
+    getByPostIdAndCommentId: async (postId: string, commentId: string) => {
         const existingComment = await prisma.comment.findUnique({
             where: { id: commentId, postId },
         });
@@ -88,7 +91,10 @@ const commentService = {
         commentId: string,
         userId: string
     ) => {
-        const existingComment = await commentService.getById(postId, commentId);
+        const existingComment = await commentService.getByPostIdAndCommentId(
+            postId,
+            commentId
+        );
 
         ensureOwner(existingComment.userId, userId);
 
@@ -100,7 +106,10 @@ const commentService = {
 
     // Delete
     delete: async (postId: string, commentId: string, userId: string) => {
-        const existingComment = await commentService.getById(postId, commentId);
+        const existingComment = await commentService.getByPostIdAndCommentId(
+            postId,
+            commentId
+        );
 
         ensureOwner(existingComment.userId, userId);
 

@@ -113,10 +113,8 @@ const commentController = {
         try {
             const { postId, commentId } = req.params;
 
-            const existingComment = await commentService.getById(
-                postId,
-                commentId
-            );
+            const existingComment =
+                await commentService.getByPostIdAndCommentId(postId, commentId);
 
             sendResponse(res, 'Comment fetched successfully', existingComment);
         } catch (error) {
