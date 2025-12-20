@@ -72,6 +72,18 @@ const commentService = {
         });
     },
 
+    // Get by id
+    getById: async (commentId: string) => {
+        const existingComment = await prisma.comment.findUnique({
+            where: { id: commentId },
+        });
+
+        if (!existingComment)
+            throw apiError(StatusCodes.NOT_FOUND, 'Comment not found');
+
+        return existingComment;
+    },
+
     // Get by post id and comment id
     getByPostIdAndCommentId: async (postId: string, commentId: string) => {
         const existingComment = await prisma.comment.findUnique({
