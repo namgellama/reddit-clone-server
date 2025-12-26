@@ -13,6 +13,16 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  BLOGGER
+  ADMIN
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -20,6 +30,8 @@ model User {
   firstName String   @db.VarChar(30)
   lastName  String   @db.VarChar(30)
   password  String?
+  role      UserRole @default(BLOGGER)
+  provider  Provider @default(LOCAL)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
