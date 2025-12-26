@@ -27,7 +27,7 @@ const authService = {
         if (existingUsername)
             throw new ApiError('Username already exists', StatusCodes.CONFLICT);
 
-        const hashedPassword = await hashPassword(body.password);
+        const hashedPassword = await hashPassword(body.password!);
 
         return await userService.create({
             email,
@@ -35,6 +35,7 @@ const authService = {
             firstName,
             lastName,
             password: hashedPassword,
+            provider: 'LOCAL',
         });
     },
 
@@ -74,6 +75,19 @@ const authService = {
     // Refresh token
     refreshToken: (res: Response, userId: string) => {
         const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
+
+        return { accessToken };
+    },
+
+    // Google login
+    googleLogin: async (res: Response, userId: string) => {
+        const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
+        const refreshToken = signJwt(
+            { sub: userId, type: 'refresh' },
+            'refresh'
+        );
+
+        setRefreshToken(res, refreshToken);
 
         return { accessToken };
     },

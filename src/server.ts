@@ -8,6 +8,7 @@ import passport from 'passport';
 
 import { indexRoutes } from '@/routes';
 import { config } from '@/shared/config';
+import '@/shared/config/strategies/google.strategy';
 import '@/shared/config/strategies/passport-access';
 import '@/shared/config/strategies/passport-refresh';
 import { logger } from '@/shared/lib/logger';
