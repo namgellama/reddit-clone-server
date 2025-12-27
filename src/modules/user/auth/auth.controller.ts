@@ -49,7 +49,7 @@ const authController = {
         try {
             authService.logout(res);
 
-            sendResponse(res, 'User logged out successfully', {});
+            sendResponse(res, 'User logged out successfully');
         } catch (error) {
             next(error);
         }
