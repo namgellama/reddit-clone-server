@@ -15,6 +15,12 @@ router.post(
 );
 
 router.post(
+    '/signup/register-email',
+    validate(authValidation.registerEmail),
+    authController.registerEmail
+);
+
+router.post(
     '/login',
     validate(authValidation.loginSchema),
     authController.login

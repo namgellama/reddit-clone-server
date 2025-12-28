@@ -11,9 +11,47 @@ import {
 import { ApiError } from '@/shared/utils/error.utils';
 import userService from '../user/user.service';
 import { ICreateUserInput } from '../user/user.validation';
-import { ILoginUserInput } from './auth.validation';
+import { ILoginUserInput, IRegisterEmailInput } from './auth.validation';
+import { redis } from '@/shared/config/redis';
+import { generateOtp } from '@/shared/utils/otp.utils';
+import { transporter } from '@/shared/config/nodemailer';
+import { config } from '@/shared/config';
 
 const authService = {
+    // Sign up - Register email
+    registerEmail: async (body: IRegisterEmailInput) => {
+        const { email } = body;
+
+        const existingEmail = await userService.getByEmail(email);
+
+        if (existingEmail)
+            throw new ApiError('Email already exists', StatusCodes.CONFLICT);
+
+        const otp = generateOtp();
+        console.log('🚀 ~ otp:', otp);
+
+        await redis.set(
+            `signup:${email}`,
+            JSON.stringify({
+                otp,
+            }),
+
+            { expiration: { type: 'EX', value: 600 } }
+        );
+
+        await transporter.sendMail({
+            from: `"REDDIT CLONE" <${config.nodemailer.email}>`,
+            to: email,
+            subject: 'Verify your email',
+            html: `
+                <h2>Email Verification</h2>
+                <p>Your OTP:</p>
+                <h1>${otp}</h1>
+                <p>Expires in 10 minutes.</p>
+            `,
+        });
+    },
+
     // Register
     register: async (body: ICreateUserInput) => {
         const { email, username, firstName, lastName, password } = body;

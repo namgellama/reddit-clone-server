@@ -3,7 +3,6 @@ import { Response } from 'express';
 import ms, { StringValue } from 'ms';
 
 import { config } from '@/shared/config';
-import { TokenType } from '@/shared/lib/jwt';
 
 export const hashPassword = async (password: string) => {
     return await bcrypt.hash(password, 10);
