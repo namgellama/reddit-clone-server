@@ -5,7 +5,11 @@ import { User } from '@/generated/prisma';
 import { sendResponse } from '@/shared/utils/response.utils';
 import { ICreateUserInput } from '../user/user.validation';
 import authService from './auth.service';
-import { ILoginUserInput, IRegisterEmailInput } from './auth.validation';
+import {
+    ILoginUserInput,
+    IRegisterEmailInput,
+    IVerifyEmailInput,
+} from './auth.validation';
 
 const authController = {
     // Sign up - Register email
@@ -20,6 +24,23 @@ const authController = {
             await authService.registerEmail(body);
 
             sendResponse(res, 'OTP sent to email');
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Sign up - Verify email
+    verifyEmail: async (
+        req: Request<{}, {}, IVerifyEmailInput>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const body = req.body;
+
+            await authService.verifyEmail(body);
+
+            sendResponse(res, 'Email verified successfully');
         } catch (error) {
             next(error);
         }

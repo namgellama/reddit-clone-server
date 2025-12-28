@@ -1,6 +1,9 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { config } from '@/shared/config';
+import { transporter } from '@/shared/config/nodemailer';
+import { redis } from '@/shared/config/redis';
 import { signJwt } from '@/shared/lib/jwt';
 import {
     clearRefreshToken,
@@ -9,13 +12,14 @@ import {
     setRefreshToken,
 } from '@/shared/utils/auth.utils';
 import { ApiError } from '@/shared/utils/error.utils';
+import { generateOtp } from '@/shared/utils/otp.utils';
 import userService from '../user/user.service';
 import { ICreateUserInput } from '../user/user.validation';
-import { ILoginUserInput, IRegisterEmailInput } from './auth.validation';
-import { redis } from '@/shared/config/redis';
-import { generateOtp } from '@/shared/utils/otp.utils';
-import { transporter } from '@/shared/config/nodemailer';
-import { config } from '@/shared/config';
+import {
+    ILoginUserInput,
+    IRegisterEmailInput,
+    IVerifyEmailInput,
+} from './auth.validation';
 
 const authService = {
     // Sign up - Register email
@@ -50,6 +54,27 @@ const authService = {
                 <p>Expires in 10 minutes.</p>
             `,
         });
+    },
+
+    // Sign up - Verify email
+    verifyEmail: async (body: IVerifyEmailInput) => {
+        const { email, otp } = body;
+
+        const key = `signup:${email}`;
+        const data = await redis.get(key);
+
+        console.log('data', data);
+
+        if (!data)
+            throw new ApiError(
+                'OTP expired or not found',
+                StatusCodes.BAD_REQUEST
+            );
+
+        const parsed = JSON.parse(data);
+
+        if (Number(parsed.otp) !== otp)
+            throw new ApiError('Invalid OTP', StatusCodes.BAD_REQUEST);
     },
 
     // Register
