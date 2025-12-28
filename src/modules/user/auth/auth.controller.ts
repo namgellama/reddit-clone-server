@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { User } from '@/generated/prisma';
+import { config } from '@/shared/config';
 import { sendResponse } from '@/shared/utils/response.utils';
 import { ICreateUserInput } from '../user/user.validation';
 import authService from './auth.service';
@@ -86,7 +87,7 @@ const authController = {
         try {
             authService.logout(res);
 
-            sendResponse(res, 'User logged out successfully', {});
+            sendResponse(res, 'User logged out successfully');
         } catch (error) {
             next(error);
         }
@@ -100,6 +101,24 @@ const authController = {
             const { accessToken } = authService.refreshToken(res, user.id);
 
             sendResponse(res, 'Token refreshed successfully', { accessToken });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Google login
+    googleLogin: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const user = req.user;
+
+            const { accessToken } = await authService.googleLogin(
+                res,
+                user!.id
+            );
+
+            res.redirect(
+                `${config.google.clientRedirectUrl}?accessToken=${accessToken}`
+            );
         } catch (error) {
             next(error);
         }

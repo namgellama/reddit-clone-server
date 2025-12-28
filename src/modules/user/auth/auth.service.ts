@@ -93,6 +93,7 @@ const authService = {
             email,
             username,
             password: hashedPassword,
+            provider: 'LOCAL',
         });
     },
 
@@ -132,6 +133,19 @@ const authService = {
     // Refresh token
     refreshToken: (res: Response, userId: string) => {
         const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
+
+        return { accessToken };
+    },
+
+    // Google login
+    googleLogin: async (res: Response, userId: string) => {
+        const accessToken = signJwt({ sub: userId, type: 'access' }, 'access');
+        const refreshToken = signJwt(
+            { sub: userId, type: 'refresh' },
+            'refresh'
+        );
+
+        setRefreshToken(res, refreshToken);
 
         return { accessToken };
     },

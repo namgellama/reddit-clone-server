@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { refreshProtect } from '@/shared/middlewares/auth.middleware';
 import { validate } from '@/shared/middlewares/validate.middleware';
+import passport from 'passport';
 import userValidation from '../user/user.validation';
 import authController from './auth.controller';
 import authValidation from './auth.validation';
@@ -35,5 +36,18 @@ router.post(
 router.post('/logout', authController.logout);
 
 router.post('/refresh-token', refreshProtect, authController.refreshToken);
+
+router.get(
+    '/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get(
+    '/google/callback',
+    passport.authenticate('google', {
+        session: false,
+    }),
+    authController.googleLogin
+);
 
 export { router as authRoutes };
