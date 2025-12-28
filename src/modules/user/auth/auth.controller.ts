@@ -46,7 +46,7 @@ const authController = {
         }
     },
 
-    // Register
+    // Sign up - register user
     register: async (
         req: Request<{}, {}, ICreateUserInput>,
         res: Response,

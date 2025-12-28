@@ -32,7 +32,6 @@ const authService = {
             throw new ApiError('Email already exists', StatusCodes.CONFLICT);
 
         const otp = generateOtp();
-        console.log('🚀 ~ otp:', otp);
 
         await redis.set(
             `signup:${email}`,
@@ -63,8 +62,6 @@ const authService = {
         const key = `signup:${email}`;
         const data = await redis.get(key);
 
-        console.log('data', data);
-
         if (!data)
             throw new ApiError(
                 'OTP expired or not found',
@@ -79,7 +76,7 @@ const authService = {
 
     // Register
     register: async (body: ICreateUserInput) => {
-        const { email, username, firstName, lastName, password } = body;
+        const { email, username, password } = body;
 
         const existingEmail = await userService.getByEmail(email);
         const existingUsername = await userService.getByUsername(username);
@@ -90,13 +87,11 @@ const authService = {
         if (existingUsername)
             throw new ApiError('Username already exists', StatusCodes.CONFLICT);
 
-        const hashedPassword = await hashPassword(body.password);
+        const hashedPassword = await hashPassword(password);
 
         return await userService.create({
             email,
             username,
-            firstName,
-            lastName,
             password: hashedPassword,
         });
     },
