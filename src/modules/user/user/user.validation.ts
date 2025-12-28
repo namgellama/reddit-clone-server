@@ -4,15 +4,6 @@ const createSchema = z
     .object({
         email: z.email().trim().nonempty('Email is required'),
         username: z.string().trim().nonempty('Username is required'),
-        firstName: z
-            .string()
-            .trim()
-            .min(3, 'First name must be at least 3 characters'),
-        lastName: z
-            .string()
-            .trim()
-            .min(3, 'Last name must be at least 3 characters'),
-
         password: z.string().optional(),
         provider: z.enum(['LOCAL', 'GOOGLE']),
     })

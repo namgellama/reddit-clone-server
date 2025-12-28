@@ -25,4 +25,9 @@ export const config = {
         refreshSecret: env.JWT_REFRESH_SECRET,
         refreshExpiry: env.JWT_REFRESH_EXPIRY as StringValue,
     },
+    nodemailer: {
+        email: env.EMAIL_USER,
+        password: env.EMAIL_PASSWORD,
+    },
+    redisUrl: env.REDIS_URL,
 };

@@ -1,6 +1,9 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { config } from '@/shared/config';
+import { transporter } from '@/shared/config/nodemailer';
+import { redis } from '@/shared/config/redis';
 import { signJwt } from '@/shared/lib/jwt';
 import {
     clearRefreshToken,
@@ -9,14 +12,71 @@ import {
     setRefreshToken,
 } from '@/shared/utils/auth.utils';
 import { ApiError } from '@/shared/utils/error.utils';
+import { generateOtp } from '@/shared/utils/otp.utils';
 import userService from '../user/user.service';
 import { ICreateUserInput } from '../user/user.validation';
-import { ILoginUserInput } from './auth.validation';
+import {
+    ILoginUserInput,
+    IRegisterEmailInput,
+    IVerifyEmailInput,
+} from './auth.validation';
 
 const authService = {
+    // Sign up - Register email
+    registerEmail: async (body: IRegisterEmailInput) => {
+        const { email } = body;
+
+        const existingEmail = await userService.getByEmail(email);
+
+        if (existingEmail)
+            throw new ApiError('Email already exists', StatusCodes.CONFLICT);
+
+        const otp = generateOtp();
+
+        await redis.set(
+            `signup:${email}`,
+            JSON.stringify({
+                otp,
+            }),
+
+            { expiration: { type: 'EX', value: 600 } }
+        );
+
+        await transporter.sendMail({
+            from: `"REDDIT CLONE" <${config.nodemailer.email}>`,
+            to: email,
+            subject: 'Verify your email',
+            html: `
+                <h2>Email Verification</h2>
+                <p>Your OTP:</p>
+                <h1>${otp}</h1>
+                <p>Expires in 10 minutes.</p>
+            `,
+        });
+    },
+
+    // Sign up - Verify email
+    verifyEmail: async (body: IVerifyEmailInput) => {
+        const { email, otp } = body;
+
+        const key = `signup:${email}`;
+        const data = await redis.get(key);
+
+        if (!data)
+            throw new ApiError(
+                'OTP expired or not found',
+                StatusCodes.BAD_REQUEST
+            );
+
+        const parsed = JSON.parse(data);
+
+        if (Number(parsed.otp) !== otp)
+            throw new ApiError('Invalid OTP', StatusCodes.BAD_REQUEST);
+    },
+
     // Register
     register: async (body: ICreateUserInput) => {
-        const { email, username, firstName, lastName, password } = body;
+        const { email, username, password } = body;
 
         const existingEmail = await userService.getByEmail(email);
         const existingUsername = await userService.getByUsername(username);
@@ -27,13 +87,11 @@ const authService = {
         if (existingUsername)
             throw new ApiError('Username already exists', StatusCodes.CONFLICT);
 
-        const hashedPassword = await hashPassword(body.password!);
+        const hashedPassword = await hashPassword(password);
 
         return await userService.create({
             email,
             username,
-            firstName,
-            lastName,
             password: hashedPassword,
             provider: 'LOCAL',
         });
