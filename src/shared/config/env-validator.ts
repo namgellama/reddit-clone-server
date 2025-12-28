@@ -18,6 +18,9 @@ const envSchema = z.object({
         .string()
         .min(32, 'JWT REFRESH SECRET must be at least 32 characters'),
     JWT_REFRESH_EXPIRY: z.string(),
+    EMAIL_USER: z.email().nonempty('EMAIL USER is required'),
+    EMAIL_PASSWORD: z.string().nonempty('EMAIL PASSWORD is required'),
+    REDIS_URL: z.url().nonempty('REDIS URL is required'),
 });
 
 export const validateEnv = () => {
