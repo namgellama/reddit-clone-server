@@ -20,8 +20,6 @@ passport.use(
                 if (!user)
                     user = await userService.create({
                         email: profile.emails?.[0].value!,
-                        firstName: profile.name?.givenName || '',
-                        lastName: profile.name?.familyName || '',
                         username:
                             profile.emails?.[0].value!.split('@')[0] || '',
                         provider: 'GOOGLE',

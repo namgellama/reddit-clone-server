@@ -87,7 +87,7 @@ const authService = {
         if (existingUsername)
             throw new ApiError('Username already exists', StatusCodes.CONFLICT);
 
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(password!);
 
         return await userService.create({
             email,

@@ -1,14 +1,11 @@
 import z from 'zod';
 
-const loginSchema = z.object({
-    email: z.email().trim().nonempty('Email is required'),
-    password: z.string().nonempty('Password is required'),
-});
-
+// Sign up - register email
 const registerEmail = z.object({
     email: z.email().trim().nonempty('Email is required'),
 });
 
+// Sign up - verify email
 const verifyEmail = z.object({
     email: z.email().trim().nonempty('Email is required'),
     otp: z.coerce
@@ -18,10 +15,16 @@ const verifyEmail = z.object({
         .max(999999, 'OTP must be 6 digits'),
 });
 
+// Login
+const loginSchema = z.object({
+    email: z.email().trim().nonempty('Email is required'),
+    password: z.string().nonempty('Password is required'),
+});
+
 const authValidation = {
-    loginSchema,
     registerEmail,
     verifyEmail,
+    loginSchema,
 };
 
 export default authValidation;
