@@ -5,7 +5,6 @@ const createSchema = z
         email: z.email().trim().nonempty('Email is required'),
         username: z.string().trim().nonempty('Username is required'),
         password: z.string().optional(),
-        provider: z.enum(['LOCAL', 'GOOGLE']),
     })
     .superRefine((data, ctx) => {
         const { password } = data;

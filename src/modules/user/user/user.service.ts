@@ -1,11 +1,12 @@
 import { Request } from 'express';
 
+import { Provider } from '@/generated/prisma';
 import { prisma } from '@/shared/lib/prisma';
 import { ICreateUserInput } from './user.validation';
 
 const userService = {
     // Create
-    create: async (body: ICreateUserInput) => {
+    create: async (body: ICreateUserInput & { provider: Provider }) => {
         const { password, ...rest } = await prisma.user.create({ data: body });
 
         return rest;
