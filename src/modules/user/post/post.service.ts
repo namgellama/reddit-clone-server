@@ -4,14 +4,20 @@ import { prisma } from '@/shared/lib/prisma';
 import { ensureOwner } from '@/shared/utils/ensure-owner.utils';
 import { apiError } from '@/shared/utils/error.utils';
 import { ICreatePostInput } from './post.validations';
+import { config } from '@/shared/config';
 
 const postService = {
     // Create
-    create: async (body: ICreatePostInput, userId: string) => {
+    create: async (
+        body: ICreatePostInput & { image?: Express.Multer.File },
+        userId: string
+    ) => {
+        console.log('body', body);
         return await prisma.post.create({
             data: {
                 ...body,
                 userId,
+                image: body.image ? `/uploads/${body.image.filename}` : null,
             },
         });
     },
@@ -30,8 +36,11 @@ const postService = {
             },
         });
 
-        return posts.map(({ _count, ...rest }) => ({
+        return posts.map(({ _count, image, ...rest }) => ({
             ...rest,
+            image: image
+                ? `http://localhost:${config.server.port}${image}`
+                : null,
             commentsCount: _count.comments,
             upvotesCount: _count.upvotes,
             downvotesCount: _count.downvotes,
