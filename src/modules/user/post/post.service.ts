@@ -41,9 +41,7 @@ const postService = {
             image: image
                 ? `http://localhost:${config.server.port}${image}`
                 : null,
-            commentsCount: _count.comments,
-            upvotesCount: _count.upvotes,
-            downvotesCount: _count.downvotes,
+            count: _count,
         }));
     },
 
@@ -86,9 +84,7 @@ const postService = {
                 upvotesCount: _count.upvotes,
                 downvotesCount: _count.downvotes,
             })),
-            commentsCount: _count.comments,
-            upvotesCount: _count.upvotes,
-            downvotesCount: _count.downvotes,
+            count: _count,
         };
     },
 
