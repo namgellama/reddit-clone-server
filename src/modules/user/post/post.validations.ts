@@ -2,10 +2,7 @@ import { z } from 'zod';
 
 const createSchema = z.object({
     title: z.string().trim().min(3, 'Title must be at least 3 characters'),
-    description: z
-        .string()
-        .trim()
-        .min(5, 'Description must be at least 5 characters'),
+    content: z.string().trim().min(5, 'Content must be at least 5 characters'),
 });
 
 const postValidation = {

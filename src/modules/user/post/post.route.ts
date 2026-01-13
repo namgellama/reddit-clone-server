@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { protect } from '@/shared/middlewares/auth.middleware';
+import { upload } from '@/shared/middlewares/upload.middleware';
 import { validate } from '@/shared/middlewares/validate.middleware';
 import commonValidation from '@/shared/validations/common.validation';
 import postController from './post.controller';
@@ -11,6 +12,7 @@ const router = Router();
 router.post(
     '/',
     protect,
+    upload.array('images', 3),
     validate(postValidation.createSchema),
     postController.create
 );

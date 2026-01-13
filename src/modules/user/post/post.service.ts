@@ -7,11 +7,23 @@ import { ICreatePostInput } from './post.validations';
 
 const postService = {
     // Create
-    create: async (body: ICreatePostInput, userId: string) => {
+    create: async (
+        body: ICreatePostInput & { images?: Express.Multer.File[] },
+        userId: string
+    ) => {
+        const imagePaths: string[] = [];
+
+        if (body.images?.length) {
+            for (const image of body.images) {
+                imagePaths.push(`/uploads/${image.filename}`);
+            }
+        }
+
         return await prisma.post.create({
             data: {
                 ...body,
                 userId,
+                images: imagePaths,
             },
         });
     },
@@ -32,9 +44,7 @@ const postService = {
 
         return posts.map(({ _count, ...rest }) => ({
             ...rest,
-            commentsCount: _count.comments,
-            upvotesCount: _count.upvotes,
-            downvotesCount: _count.downvotes,
+            count: _count,
         }));
     },
 
@@ -77,9 +87,7 @@ const postService = {
                 upvotesCount: _count.upvotes,
                 downvotesCount: _count.downvotes,
             })),
-            commentsCount: _count.comments,
-            upvotesCount: _count.upvotes,
-            downvotesCount: _count.downvotes,
+            count: _count,
         };
     },
 
