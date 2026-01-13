@@ -14,12 +14,14 @@ const postController = {
     ) => {
         try {
             const userId = req.user?.id!;
-            const body: ICreatePostInput & { image?: Express.Multer.File } =
-                req.body;
 
-            if (req.file) body.image = req.file;
+            const files = req.files as Express.Multer.File[] | undefined;
 
-            body.image = req.file;
+            const body: ICreatePostInput & { images?: Express.Multer.File[] } =
+                {
+                    ...req.body,
+                    images: files,
+                };
 
             const newPost = await postService.create(body, userId);
 

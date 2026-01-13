@@ -4,20 +4,26 @@ import { prisma } from '@/shared/lib/prisma';
 import { ensureOwner } from '@/shared/utils/ensure-owner.utils';
 import { apiError } from '@/shared/utils/error.utils';
 import { ICreatePostInput } from './post.validations';
-import { config } from '@/shared/config';
 
 const postService = {
     // Create
     create: async (
-        body: ICreatePostInput & { image?: Express.Multer.File },
+        body: ICreatePostInput & { images?: Express.Multer.File[] },
         userId: string
     ) => {
-        console.log('body', body);
+        const imagePaths: string[] = [];
+
+        if (body.images?.length) {
+            for (const image of body.images) {
+                imagePaths.push(`/uploads/${image.filename}`);
+            }
+        }
+
         return await prisma.post.create({
             data: {
                 ...body,
                 userId,
-                image: body.image ? `/uploads/${body.image.filename}` : null,
+                images: imagePaths,
             },
         });
     },

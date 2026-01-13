@@ -12,7 +12,7 @@ const router = Router();
 router.post(
     '/',
     protect,
-    upload.single('image'),
+    upload.array('images', 3),
     validate(postValidation.createSchema),
     postController.create
 );
