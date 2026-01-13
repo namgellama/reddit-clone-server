@@ -36,11 +36,8 @@ const postService = {
             },
         });
 
-        return posts.map(({ _count, image, ...rest }) => ({
+        return posts.map(({ _count, ...rest }) => ({
             ...rest,
-            image: image
-                ? `http://localhost:${config.server.port}${image}`
-                : null,
             count: _count,
         }));
     },
