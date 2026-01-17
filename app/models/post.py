@@ -20,7 +20,7 @@ class Post(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     date_posted: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC))
-    # user_id: Mapped[UUID] = mapped_column(
-    #     ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True)
 
-    # author: Mapped[User] = relationship(back_populates="posts")
+    author: Mapped[User] = relationship(back_populates="posts")
