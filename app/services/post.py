@@ -51,3 +51,15 @@ def update(id: UUID, payload: PostCreate, db: Annotated[Session, Depends(get_db)
     db.commit()
     db.refresh(post)
     return post
+
+
+def delete(id: UUID, db: Annotated[Session, Depends(get_db)]):
+    result = db.execute(select(Post).where(Post.id == id))
+    post = result.scalars().first()
+
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
+
+    db.delete(post)
+    db.commit()
