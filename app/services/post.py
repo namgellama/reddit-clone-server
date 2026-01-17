@@ -35,3 +35,19 @@ def create(payload: PostCreate, db: Annotated[Session, Depends(get_db)]):
     db.commit()
     db.refresh(new_post)
     return new_post
+
+
+def update(id: UUID, payload: PostCreate, db: Annotated[Session, Depends(get_db)]):
+    result = db.execute(select(Post).where(Post.id == id))
+    post = result.scalars().first()
+
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
+
+    post.title = payload.title,
+    post.content = payload.content
+
+    db.commit()
+    db.refresh(post)
+    return post

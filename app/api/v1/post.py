@@ -26,3 +26,8 @@ def get_post(id: UUID, db: Annotated[Session, Depends(get_db)]):
 @router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 def create_post(body: PostCreate, db: Annotated[Session, Depends(get_db)]):
     return post.create(payload=body, db=db)
+
+
+@router.put("/{id}", response_model=PostResponse)
+def update_post(id: UUID, body: PostCreate, db: Annotated[Session, Depends(get_db)]):
+    return post.update(id=id, payload=body, db=db)
