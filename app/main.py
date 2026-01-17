@@ -14,4 +14,4 @@ def index():
     return {"message": "Hello World"}
 
 
-app.include_router(post.router, prefix="/posts", tags=["Post"])
+app.include_router(post.router,  prefix="/api/v1/posts", tags=["Post"])
