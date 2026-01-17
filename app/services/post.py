@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.post import Post
+from app.schemas.post import PostCreate
 
 
 def get_all(db: Annotated[Session, Depends(get_db)]):
@@ -25,3 +26,12 @@ def get_by_id(id: UUID, db: Annotated[Session, Depends(get_db)]):
             status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
 
     return post
+
+
+def create(payload: PostCreate, db: Annotated[Session, Depends(get_db)]):
+    new_post = Post(title=payload.title, content=payload.content)
+
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return new_post
