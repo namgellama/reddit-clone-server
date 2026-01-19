@@ -1,12 +1,21 @@
 from fastapi import FastAPI
 
+from contextlib import asynccontextmanager
+
 from .database import Base, engine
 from .api.v1 import post, user
 
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Startup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Shutdown
+    await engine.dispose()
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get('/')

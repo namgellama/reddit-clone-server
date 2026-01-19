@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.user import UserCreate
 from app.database import get_db
@@ -11,15 +11,15 @@ from app.models.user import User
 from app.utils.password import hash_password
 
 
-def create(payload: UserCreate, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(User).where(User.username == payload.username))
+async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(User).where(User.username == payload.username))
     existingUsername = result.scalars().first()
 
     if existingUsername:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Username already exists")
 
-    result = db.execute(select(User).where(User.email == payload.email))
+    result = await db.execute(select(User).where(User.email == payload.email))
     existingEmail = result.scalars().first()
 
     if existingEmail:

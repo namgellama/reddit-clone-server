@@ -4,21 +4,22 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.post import Post
 from app.schemas.post import PostCreate
 
 
-def get_all(db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(Post))
+async def get_all(db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(Post).options(selectinload(Post.author)))
     posts = result.scalars().all()
     return posts
 
 
-def get_by_id(id: UUID, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(Post).where(Post.id == id))
+async def get_by_id(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(Post).options(selectinload(Post.author)).where(Post.id == id))
     post = result.scalars().first()
 
     if not post:
@@ -28,17 +29,17 @@ def get_by_id(id: UUID, db: Annotated[Session, Depends(get_db)]):
     return post
 
 
-def create(payload: PostCreate, db: Annotated[Session, Depends(get_db)]):
+async def create(payload: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     new_post = Post(title=payload.title, content=payload.content)
 
     db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
+    await db.commit()
+    await db.refresh(new_post, attribute_names=['author'])
     return new_post
 
 
-def update(id: UUID, payload: PostCreate, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(Post).where(Post.id == id))
+async def update(id: UUID, payload: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(Post).where(Post.id == id))
     post = result.scalars().first()
 
     if not post:
@@ -48,18 +49,18 @@ def update(id: UUID, payload: PostCreate, db: Annotated[Session, Depends(get_db)
     post.title = payload.title,
     post.content = payload.content
 
-    db.commit()
-    db.refresh(post)
+    await db.commit()
+    await db.refresh(post, attribute_names=['author'])
     return post
 
 
-def delete(id: UUID, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(Post).where(Post.id == id))
+async def delete(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(Post).where(Post.id == id))
     post = result.scalars().first()
 
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
 
-    db.delete(post)
-    db.commit()
+    await db.delete(post)
+    await db.commit()
