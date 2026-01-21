@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from .database import Base, engine
-from .api.v1 import post, user
+from .api.v1 import post, user, auth
 
 
 @asynccontextmanager
@@ -23,5 +23,6 @@ def index():
     return {"message": "Hello World"}
 
 
-app.include_router(post.router,  prefix="/api/v1/posts", tags=["Post"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(user.router, prefix="/api/v1/users", tags=["User"])
+app.include_router(post.router,  prefix="/api/v1/posts", tags=["Post"])
