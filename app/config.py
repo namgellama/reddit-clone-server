@@ -5,4 +5,5 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_ACCESS_SECRET = os.getenv("JWT_ACCESS_SECRET")
+JWT_REFRESH_SECRET = os.getenv("JWT_REFRESH_SECRET")

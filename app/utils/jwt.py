@@ -1,21 +1,32 @@
+from typing import Literal
 from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.config import JWT_SECRET_KEY
+from app.config import JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_token(data: dict, type: Literal["access", "refresh"]):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+
+    if type == "access":
+        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+        secret_key = JWT_ACCESS_SECRET
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(days=7)
+        secret_key = JWT_REFRESH_SECRET
+
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm="HS256")
+
+    encoded_jwt = jwt.encode(to_encode, secret_key, algorithm="HS256")
     return encoded_jwt
 
 
-def decode_token(token: str):
-    payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+def decode_token(token: str, type: Literal["access", "refresh"]):
+    if type == "access":
+        secret_key = JWT_ACCESS_SECRET
+    else:
+        secret_key = JWT_REFRESH_SECRET
+
+    payload = jwt.decode(token, secret_key, algorithms=["HS256"])
     return payload.get("sub")
