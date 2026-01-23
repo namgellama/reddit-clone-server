@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.auth import LoginResponse, RegisterEmail, RegisterEmailResponse
-from app.database import get_db
+from app.config.database import get_db
 from app.services import auth
 
 router = APIRouter()

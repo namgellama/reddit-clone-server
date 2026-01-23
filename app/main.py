@@ -2,9 +2,9 @@ from fastapi import FastAPI
 
 from contextlib import asynccontextmanager
 
-from .database import Base, engine
-from .api.v1 import post, user, auth
-from .services.redis import redis_client
+from app.config.database import Base, engine
+from app.api.v1 import post, user, auth
+from app.services.redis import redis_client
 
 
 @asynccontextmanager
