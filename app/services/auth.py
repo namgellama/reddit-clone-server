@@ -42,11 +42,6 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
         """
     )
 
-    return {
-        "success": True,
-        "message": "Otp has been sent to your email"
-    }
-
 
 async def register(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     return await user.create(payload=payload, db=db)
