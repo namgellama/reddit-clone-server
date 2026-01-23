@@ -15,6 +15,7 @@ from app.schemas.auth import RegisterEmail
 from app.schemas.user import UserCreate
 from app.services import user
 from app.utils.otp import generate_otp, store_otp
+from app.services.mail import send_mail
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -29,6 +30,17 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
 
     otp = generate_otp()
     await store_otp(f"otp:{payload.email}", 300, otp)
+
+    await send_mail(
+        subject="Verify your email",
+        recipients=[payload.email],
+        body=f"""
+             <h2>Email Verification</h2>
+                <p>Your OTP:</p>
+                <h1>{otp}</h1>
+                <p>Expires in 10 minutes.</p>
+        """
+    )
 
     return {
         "success": True,
