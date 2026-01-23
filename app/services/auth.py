@@ -11,9 +11,33 @@ from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token
 from app.utils.cookie import set_cookie
+from app.schemas.auth import RegisterEmail
+from app.schemas.user import UserCreate
+from app.services import user
+from app.utils.otp import generate_otp, store_otp
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+
+async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]):
+    existing_email = await user.get_user_by_email(email=payload.email, db=db)
+
+    if existing_email:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Email already exists")
+
+    otp = generate_otp()
+    await store_otp(f"otp:{payload.email}", 300, otp)
+
+    return {
+        "success": True,
+        "message": "Otp has been sent to your email"
+    }
+
+
+async def register(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    return await user.create(payload=payload, db=db)
 
 
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)], response: Response):

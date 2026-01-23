@@ -5,11 +5,16 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.auth import LoginResponse
+from app.schemas.auth import LoginResponse, RegisterEmail, RegisterEmailResponse
 from app.database import get_db
 from app.services import auth
 
 router = APIRouter()
+
+
+@router.post("/register-email", response_model=RegisterEmailResponse)
+async def register_email(body: RegisterEmail,  db: Annotated[AsyncSession, Depends(get_db)]):
+    return await auth.register_email(payload=body, db=db)
 
 
 @router.post("/login", response_model=LoginResponse)

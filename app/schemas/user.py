@@ -2,12 +2,12 @@
 from typing import Optional, Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, EmailStr, constr
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
 
 class UserBase(BaseModel):
     username: str = Field(min_length=1, max_length=50)
-    email: EmailStr = Field(max_length=120,)
+    email: EmailStr = Field(max_length=120)
 
 
 class UserCreate(UserBase):
