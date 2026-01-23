@@ -17,6 +17,20 @@ from app.utils.jwt import decode_token
 from app.services.auth import oauth2_scheme
 
 
+async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+
+    return user
+
+
+async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalars().first()
+
+    return user
+
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_db)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
