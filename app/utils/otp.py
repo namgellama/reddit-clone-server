@@ -1,9 +1,7 @@
 
 import random
 
-from fastapi import Request
-
-from app.services.redis import redis_client
+from app.config.redis import redis_client
 
 
 def generate_otp():

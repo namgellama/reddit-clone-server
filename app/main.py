@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.config.database import Base, engine
 from app.api.v1 import post, user, auth
-from app.services.redis import redis_client
+from app.config.redis import redis_client
 
 
 @asynccontextmanager
