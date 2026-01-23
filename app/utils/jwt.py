@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.config import JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
+from app.config import env
 
 
 def create_token(data: dict, type: Literal["access", "refresh"]):
@@ -11,10 +11,10 @@ def create_token(data: dict, type: Literal["access", "refresh"]):
 
     if type == "access":
         expire = datetime.now(timezone.utc) + timedelta(minutes=30)
-        secret_key = JWT_ACCESS_SECRET
+        secret_key = env.JWT_ACCESS_SECRET
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=7)
-        secret_key = JWT_REFRESH_SECRET
+        secret_key = env.JWT_REFRESH_SECRET
 
     to_encode.update({"exp": expire})
 
@@ -24,9 +24,9 @@ def create_token(data: dict, type: Literal["access", "refresh"]):
 
 def decode_token(token: str, type: Literal["access", "refresh"]):
     if type == "access":
-        secret_key = JWT_ACCESS_SECRET
+        secret_key = env.JWT_ACCESS_SECRET
     else:
-        secret_key = JWT_REFRESH_SECRET
+        secret_key = env.JWT_REFRESH_SECRET
 
     payload = jwt.decode(token, secret_key, algorithms=["HS256"])
     return payload.get("sub")
