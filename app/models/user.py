@@ -18,6 +18,8 @@ class User(Base):
         String(120), unique=True, nullable=False)
     password: Mapped[str | None] = mapped_column(
         String, nullable=True, default=None)
+    google_sub: Mapped[str | None] = mapped_column(
+        String, unique=True, nullable=True, default=None)
 
     posts: Mapped[list["Post"]] = relationship(
         back_populates="author", cascade="all, delete-orphan")

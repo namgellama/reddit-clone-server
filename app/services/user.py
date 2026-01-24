@@ -31,6 +31,14 @@ async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depend
     return user
 
 
+async def get_user_by_google_sub(google_sub: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    print("googele_sub", google_sub)
+    result = await db.execute(select(User).where(User.google_sub == google_sub))
+    user = result.scalars().first()
+
+    return user
+
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_db)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,7 +82,7 @@ async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db
         payload.password = hash_password(payload.password)
 
     new_user = User(username=payload.username,
-                    email=payload.email, password=payload.password)
+                    email=payload.email, password=payload.password, google_sub=payload.google_sub)
 
     db.add(new_user)
     await db.commit()

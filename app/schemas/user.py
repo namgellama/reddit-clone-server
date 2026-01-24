@@ -13,6 +13,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: Optional[Annotated[str, Field(min_length=1)]] = None
+    google_sub: Optional[Annotated[str, Field(min_length=1)]] = None
 
     @field_validator("password")
     @classmethod
