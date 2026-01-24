@@ -3,6 +3,9 @@ from typing import Annotated
 from fastapi import Depends,  HTTPException, status, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from authlib.integrations.base_client import OAuthError
+from authlib.oauth2.rfc6749 import OAuth2Token
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +14,12 @@ from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token
 from app.utils.cookie import set_cookie
-from app.schemas.auth import RegisterEmail, VerifyEmail
+from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
 from app.services import user
 from app.utils.otp import generate_otp, store_otp, verify_otp
 from app.services.mail import send_mail
+from app.config.oauth import oauth
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -78,6 +82,45 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     )
     refresh_token = create_token(
         data={"sub": str(user.id)}, type="refresh"
+    )
+
+    set_cookie(response=response, key="refresh_token",
+               value=refresh_token, max_age=60*60*24*7)
+
+    return {"access_token": access_token}
+
+
+async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)], response: Response):
+    try:
+        user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
+    except OAuthError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid Google token")
+
+    user_info = user_response.get("userinfo")
+
+    google_user = GoogleUser(**user_info)
+
+    existing_user = await user.get_user_by_google_sub(str(google_user.sub), db)
+
+    if existing_user:
+        db_user = existing_user
+    else:
+        new_user = UserCreate(
+            username=google_user.email.split("@")[0],
+            email=google_user.email,
+            password=None,
+            google_sub=str(google_user.sub)
+        )
+        print("new_user", new_user)
+
+        db_user = await user.create(new_user, db)
+
+    access_token = create_token(
+        data={"sub": str(db_user.id)}, type="access"
+    )
+    refresh_token = create_token(
+        data={"sub": str(db_user.id)}, type="refresh"
     )
 
     set_cookie(response=response, key="refresh_token",

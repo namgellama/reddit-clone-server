@@ -11,3 +11,10 @@ class VerifyEmail(RegisterEmail):
 
 class LoginResponse(BaseModel):
     access_token: str
+
+
+class GoogleUser(BaseModel):
+    sub: int
+    email: str
+    name: str
+    picture: str
