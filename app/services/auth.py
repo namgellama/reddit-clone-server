@@ -13,7 +13,7 @@ from app.config.database import get_db
 from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token
-from app.utils.cookie import set_cookie
+from app.utils.cookie import set_cookie, delete_cookie
 from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
 from app.services import user
@@ -112,7 +112,6 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
             password=None,
             google_sub=str(google_user.sub)
         )
-        print("new_user", new_user)
 
         db_user = await user.create(new_user, db)
 
@@ -127,3 +126,7 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
                value=refresh_token, max_age=60*60*24*7)
 
     return {"access_token": access_token}
+
+
+def logout(response: Response):
+    delete_cookie(response=response, key="refresh_token")

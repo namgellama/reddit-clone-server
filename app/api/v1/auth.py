@@ -64,3 +64,13 @@ async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_
     data = await auth.google_callback(request=request, db=db, response=response)
 
     return RedirectResponse(url=f"{env.FRONTEND_URL}/auth?access_token={data['access_token']}")
+
+
+@router.post("/logout", response_model=SimpleResponse)
+def logout(response: Response):
+    auth.logout(response=response)
+
+    return SimpleResponse(
+        success=True,
+        message="You have been logged out successfully"
+    )
