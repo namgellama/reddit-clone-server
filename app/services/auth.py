@@ -11,10 +11,10 @@ from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token
 from app.utils.cookie import set_cookie
-from app.schemas.auth import RegisterEmail
+from app.schemas.auth import RegisterEmail, VerifyEmail
 from app.schemas.user import UserCreate
 from app.services import user
-from app.utils.otp import generate_otp, store_otp
+from app.utils.otp import generate_otp, store_otp, verify_otp
 from app.services.mail import send_mail
 
 
@@ -41,6 +41,16 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
                 <p>Expires in 10 minutes.</p>
         """
     )
+
+
+async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]):
+    existing_email = await user.get_user_by_email(email=payload.email, db=db)
+
+    if existing_email:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Email already exists")
+
+    return await verify_otp(name=f"otp:{payload.email}", otp=payload.otp)
 
 
 async def register(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):

@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends,  Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.auth import LoginResponse, RegisterEmail
+from app.schemas.auth import LoginResponse, RegisterEmail, VerifyEmail
 from app.schemas.general import SimpleResponse
 from app.config.database import get_db
 from app.services import auth
@@ -20,6 +20,22 @@ async def register_email(body: RegisterEmail,  db: Annotated[AsyncSession, Depen
     return SimpleResponse(
         success=True,
         message="Otp has been sent to your email."
+    )
+
+
+@router.post("/verify-email", response_model=SimpleResponse)
+async def register_email(body: VerifyEmail,  db: Annotated[AsyncSession, Depends(get_db)]):
+    match = await auth.verify_email(payload=body, db=db)
+
+    if match:
+        return SimpleResponse(
+            success=True,
+            message="Your email is verified successfully"
+        )
+
+    return SimpleResponse(
+        success=False,
+        message="OTP does not match"
     )
 
 
