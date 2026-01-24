@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends,  HTTPException, status, Response
+from fastapi import Depends,  HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from authlib.integrations.base_client import OAuthError
@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.database import get_db
 from app.models.user import User
 from app.utils.password import verify_password
-from app.utils.jwt import create_token
-from app.utils.cookie import set_cookie
+from app.utils.jwt import create_token, decode_token
+from app.utils.cookie import set_cookie, delete_cookie
 from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
 from app.services import user
@@ -112,7 +112,6 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
             password=None,
             google_sub=str(google_user.sub)
         )
-        print("new_user", new_user)
 
         db_user = await user.create(new_user, db)
 
@@ -125,5 +124,41 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
 
     set_cookie(response=response, key="refresh_token",
                value=refresh_token, max_age=60*60*24*7)
+
+    return {"access_token": access_token}
+
+
+def logout(response: Response):
+    delete_cookie(response=response, key="refresh_token")
+
+
+async def refresh_token(request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]):
+    refresh_token = request.cookies.get("refresh_token")
+
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No refresh token found"
+        )
+
+    payload = decode_token(token=refresh_token, type="refresh")
+
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token"
+        )
+
+    db_user = await user.get_user_by_id(id=payload, db=db)
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user"
+        )
+
+    access_token = create_token(
+        data={"sub": str(db_user.id)}, type="access"
+    )
 
     return {"access_token": access_token}

@@ -2,8 +2,6 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 
-from pydantic import BaseModel
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +13,13 @@ from app.models.user import User
 from app.utils.password import hash_password
 from app.utils.jwt import decode_token
 from app.services.auth import oauth2_scheme
+
+
+async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(User).where(User.id == id))
+    user = result.scalars().first()
+
+    return user
 
 
 async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_db)]):
