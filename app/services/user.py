@@ -77,6 +77,6 @@ async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db
                     email=payload.email, password=payload.password)
 
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     return new_user

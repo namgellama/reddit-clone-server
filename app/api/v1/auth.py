@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.auth import LoginResponse, RegisterEmail, VerifyEmail
 from app.schemas.general import SimpleResponse
+from app.schemas.user import UserResponse, UserCreate
 from app.config.database import get_db
 from app.services import auth
 
@@ -37,6 +38,11 @@ async def register_email(body: VerifyEmail,  db: Annotated[AsyncSession, Depends
         success=False,
         message="OTP does not match"
     )
+
+
+@router.post("/register", response_model=UserResponse)
+async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    return await auth.register_user(payload=body, db=db)
 
 
 @router.post("/login", response_model=LoginResponse)

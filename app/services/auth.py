@@ -53,7 +53,7 @@ async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends
     return await verify_otp(name=f"otp:{payload.email}", otp=payload.otp)
 
 
-async def register(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+async def register_user(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     return await user.create(payload=payload, db=db)
 
 
