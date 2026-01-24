@@ -74,3 +74,8 @@ def logout(response: Response):
         success=True,
         message="You have been logged out successfully"
     )
+
+
+@router.post("/refresh-token", response_model=LoginResponse)
+async def refresh_token(request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]):
+    return await auth.refresh_token(request=request, response=response, db=db)
