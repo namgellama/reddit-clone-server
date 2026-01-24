@@ -1,8 +1,11 @@
+from starlette.middleware.sessions import SessionMiddleware
+
 from fastapi import FastAPI
 
 from contextlib import asynccontextmanager
 
-from app.config.database import Base, engine
+from app.config.database import engine
+from app.config import env
 from app.api.v1 import post, user, auth
 from app.config.redis import redis_client
 
@@ -10,9 +13,6 @@ from app.config.redis import redis_client
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # Startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     try:
         await redis_client.ping()
         print("✅ Redis connected")
@@ -28,6 +28,8 @@ async def lifespan(_app: FastAPI):
     print("🛑 Shutdown complete")
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(SessionMiddleware, secret_key=env.SECRET_KEY)
 
 
 @app.get('/')
