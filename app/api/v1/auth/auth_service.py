@@ -14,7 +14,7 @@ from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token, decode_token
 from app.utils.cookie import set_cookie, delete_cookie
-from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
+from app.api.v1.auth.auth_schema import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
 from app.services import user_service, mail_service
 from app.utils.otp import generate_otp, store_otp, verify_otp

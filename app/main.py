@@ -7,9 +7,10 @@ from contextlib import asynccontextmanager
 
 from app.config.database import engine
 from app.config import env
-from app.api.v1 import post, user, auth
+from app.api.v1 import post, user
 from app.config.redis import redis_client
 from app.api.v1.post import post_router
+from app.api.v1.auth import auth_router
 
 
 @asynccontextmanager
@@ -52,6 +53,6 @@ def index():
     return {"message": "Hello World"}
 
 
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(user.router, prefix="/api/v1/users", tags=["User"])
 app.include_router(post_router.router,  prefix="/api/v1/posts", tags=["Post"])

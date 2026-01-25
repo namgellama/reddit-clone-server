@@ -6,11 +6,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.auth import LoginResponse, RegisterEmail, VerifyEmail
+from app.api.v1.auth.auth_schema import LoginResponse, RegisterEmail, VerifyEmail
 from app.schemas.general import SimpleResponse
 from app.schemas.user import UserResponse, UserCreate
 from app.config.database import get_db
-from app.services import auth_service
+from app.api.v1.auth import auth_service
 from app.config.oauth import oauth
 from app.config import env
 

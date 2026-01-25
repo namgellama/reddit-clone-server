@@ -12,7 +12,7 @@ from app.config.database import get_db
 from app.models.user import User
 from app.utils.password import hash_password
 from app.utils.jwt import decode_token
-from app.services.auth_service import oauth2_scheme
+from app.api.v1.auth.auth_service import oauth2_scheme
 
 
 async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
