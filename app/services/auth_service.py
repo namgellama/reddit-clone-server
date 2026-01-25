@@ -16,9 +16,8 @@ from app.utils.jwt import create_token, decode_token
 from app.utils.cookie import set_cookie, delete_cookie
 from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
-from app.services import user
+from app.services import user_service, mail_service
 from app.utils.otp import generate_otp, store_otp, verify_otp
-from app.services.mail import send_mail
 from app.config.oauth import oauth
 
 
@@ -26,7 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]):
-    existing_email = await user.get_user_by_email(email=payload.email, db=db)
+    existing_email = await user_service.get_user_by_email(email=payload.email, db=db)
 
     if existing_email:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
@@ -35,7 +34,7 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
     otp = generate_otp()
     await store_otp(f"otp:{payload.email}", 300, otp)
 
-    await send_mail(
+    await mail_service.send_mail(
         subject="Verify your email",
         recipients=[payload.email],
         body=f"""
@@ -48,7 +47,7 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
 
 
 async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]):
-    existing_email = await user.get_user_by_email(email=payload.email, db=db)
+    existing_email = await user_service.get_user_by_email(email=payload.email, db=db)
 
     if existing_email:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
@@ -58,7 +57,7 @@ async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends
 
 
 async def register_user(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await user.create(payload=payload, db=db)
+    return await user_service.create(payload=payload, db=db)
 
 
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)], response: Response):
@@ -101,7 +100,7 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
 
     google_user = GoogleUser(**user_info)
 
-    existing_user = await user.get_user_by_google_sub(str(google_user.sub), db)
+    existing_user = await user_service.get_user_by_google_sub(str(google_user.sub), db)
 
     if existing_user:
         db_user = existing_user
@@ -113,7 +112,7 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
             google_sub=str(google_user.sub)
         )
 
-        db_user = await user.create(new_user, db)
+        db_user = await user_service.create(new_user, db)
 
     access_token = create_token(
         data={"sub": str(db_user.id)}, type="access"
@@ -149,7 +148,7 @@ async def refresh_token(request: Request, response: Response, db: Annotated[Asyn
             detail="Invalid or expired refresh token"
         )
 
-    db_user = await user.get_user_by_id(id=payload, db=db)
+    db_user = await user_service.get_user_by_id(id=payload, db=db)
 
     if not db_user:
         raise HTTPException(
