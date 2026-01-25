@@ -1,13 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends,  Response, Request
+from fastapi import APIRouter, Depends, HTTPException,  Response, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth.auth_schema import LoginResponse, RegisterEmail, VerifyEmail
-from app.shared.schemas.general import SimpleResponse
+from app.shared.schemas.response import APIResponse
 from app.api.v1.user.user_schema import UserResponse, UserCreate
 from app.shared.config.database import get_db
 from app.api.v1.auth import auth_service
@@ -18,40 +18,51 @@ from app.shared.config import env
 router = APIRouter()
 
 
-@router.post("/register-email", response_model=SimpleResponse)
+@router.post("/register-email", response_model=APIResponse[None])
 async def register_email(body: RegisterEmail,  db: Annotated[AsyncSession, Depends(get_db)]):
     await auth_service.register_email(payload=body, db=db)
 
-    return SimpleResponse(
+    return APIResponse(
         success=True,
-        message="Otp has been sent to your email."
+        message="Otp has been sent to your email.",
+        data=None
     )
 
 
-@router.post("/verify-email", response_model=SimpleResponse)
+@router.post("/verify-email", response_model=APIResponse[None])
 async def register_email(body: VerifyEmail,  db: Annotated[AsyncSession, Depends(get_db)]):
     match = await auth_service.verify_email(payload=body, db=db)
 
-    if match:
-        return SimpleResponse(
-            success=True,
-            message="Your email is verified successfully"
-        )
+    if not match:
+        raise HTTPException(status_code=400, detail="OTP does not match")
 
-    return SimpleResponse(
-        success=False,
-        message="OTP does not match"
+    return APIResponse(
+        success=True,
+        message="Your email is verified successfully",
+        data=None
     )
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=APIResponse[UserResponse], status_code=201)
 async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await auth_service.register_user(payload=body, db=db)
+    new_user = await auth_service.register_user(payload=body, db=db)
+
+    return APIResponse(
+        success=True,
+        message="User registered successfully",
+        data=new_user
+    )
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login", response_model=APIResponse[LoginResponse])
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)], response: Response):
-    return await auth_service.login(form_data=form_data, db=db, response=response)
+    access_token = await auth_service.login(form_data=form_data, db=db, response=response)
+
+    return APIResponse(
+        success=True,
+        message="Login successful",
+        data=access_token
+    )
 
 
 @router.get("/google")
@@ -66,16 +77,23 @@ async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_
     return RedirectResponse(url=f"{env.FRONTEND_URL}/auth?access_token={data['access_token']}")
 
 
-@router.post("/logout", response_model=SimpleResponse)
+@router.post("/logout", response_model=APIResponse[None])
 def logout(response: Response):
     auth_service.logout(response=response)
 
-    return SimpleResponse(
+    return APIResponse(
         success=True,
-        message="You have been logged out successfully"
+        message="You have been logged out successfully",
+        data=None
     )
 
 
-@router.post("/refresh-token", response_model=LoginResponse)
+@router.post("/refresh-token", response_model=APIResponse[LoginResponse])
 async def refresh_token(request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await auth_service.refresh_token(request=request, response=response, db=db)
+    access_token = await auth_service.refresh_token(request=request, response=response, db=db)
+
+    return APIResponse(
+        success=True,
+        message="Token refreshed successfully",
+        data=access_token
+    )
