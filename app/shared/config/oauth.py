@@ -1,7 +1,7 @@
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 
-from app.config import env
+from app.shared.config import env
 
 
 config_data = {'GOOGLE_CLIENT_ID': env.GOOGLE_CLIENT_ID,

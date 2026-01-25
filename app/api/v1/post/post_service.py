@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_db
+from app.shared.config.database import get_db
 from app.api.v1.post.post_model import Post
 from app.api.v1.post.post_schema import PostCreate
 

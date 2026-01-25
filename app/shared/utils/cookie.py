@@ -1,6 +1,6 @@
 from fastapi import Response
 
-from app.config import env
+from app.shared.config import env
 
 
 def set_cookie(response: Response, key: str, value: str, max_age: int):

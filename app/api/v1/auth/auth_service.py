@@ -10,16 +10,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.user import user_service
-from app.config.database import get_db
+from app.shared.config.database import get_db
 from app.api.v1.user.user_model import User
-from app.utils.password import verify_password
-from app.utils.jwt import create_token, decode_token
-from app.utils.cookie import set_cookie, delete_cookie
+from app.shared.utils.password import verify_password
+from app.shared.utils.jwt import create_token, decode_token
+from app.shared.utils.cookie import set_cookie, delete_cookie
 from app.api.v1.auth.auth_schema import RegisterEmail, VerifyEmail, GoogleUser
 from app.api.v1.user.user_schema import UserCreate
-from app.services import mail_service
-from app.utils.otp import generate_otp, store_otp, verify_otp
-from app.config.oauth import oauth
+from app.shared.services import mail_service
+from app.shared.utils.otp import generate_otp, store_otp, verify_otp
+from app.shared.config.oauth import oauth
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")

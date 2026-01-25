@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_db
+from app.shared.config.database import get_db
 from app.api.v1.post.post_schema import PostResponse, PostCreate, PostBase, PostDetailsResponse
 from app.api.v1.user.user_schema import UserResponse
 from app.api.v1.post import post_service
 from app.api.v1.user.user_service import get_current_user
-from app.schemas.response import APIResponse
+from app.shared.schemas.response import APIResponse
 
 
 router = APIRouter()

@@ -1,6 +1,6 @@
 from fastapi_mail import ConnectionConfig
 
-from app.config import env
+from app.shared.config import env
 
 conf = ConnectionConfig(
     MAIL_USERNAME=env.MAIL_USERNAME,

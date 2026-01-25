@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jwt.exceptions import InvalidTokenError
 
 from app.api.v1.user.user_schema import UserCreate
-from app.config.database import get_db
+from app.shared.config.database import get_db
 from app.api.v1.user.user_model import User
-from app.utils.password import hash_password
-from app.utils.jwt import decode_token
+from app.shared.utils.password import hash_password
+from app.shared.utils.jwt import decode_token
 from app.api.v1.auth.auth_service import oauth2_scheme
 
 

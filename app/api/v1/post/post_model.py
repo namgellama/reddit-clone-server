@@ -7,8 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.config.database import Base
-from app.models.user import User
+from app.shared.config.database import Base
+from app.api.v1.user.user_model import User
 
 
 class Post(Base):

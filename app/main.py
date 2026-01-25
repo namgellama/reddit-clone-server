@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
 
-from app.config.database import engine
-from app.config import env
-from app.config.redis import redis_client
+from app.shared.config.database import engine
+from app.shared.config import env
+from app.shared.config.redis import redis_client
 from app.api.v1.post import post_router
 from app.api.v1.auth import auth_router
 from app.api.v1.user import user_router

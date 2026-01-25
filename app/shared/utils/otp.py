@@ -1,7 +1,7 @@
 
 import random
 
-from app.config.redis import redis_client
+from app.shared.config.redis import redis_client
 
 
 def generate_otp():

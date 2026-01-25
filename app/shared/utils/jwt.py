@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.config import env
+from app.shared.config import env
 
 
 def create_token(data: dict, type: Literal["access", "refresh"]):
