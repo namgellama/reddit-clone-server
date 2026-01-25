@@ -30,7 +30,8 @@ async def get_by_id(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 
 
 async def create(payload: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    new_post = Post(title=payload.title, content=payload.content)
+    new_post = Post(title=payload.title,
+                    content=payload.content, user_id=payload.user_id)
 
     db.add(new_post)
     await db.commit()
@@ -46,8 +47,13 @@ async def update(id: UUID, payload: PostCreate, db: Annotated[AsyncSession, Depe
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
 
-    post.title = payload.title,
+    if post.user_id != payload.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this post")
+
+    post.title = payload.title
     post.content = payload.content
+    post.user_id = payload.user_id
 
     await db.commit()
     await db.refresh(post, attribute_names=['author'])

@@ -2,6 +2,8 @@ from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict
 
+from app.schemas.user import UserResponse
+
 
 class PostBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
@@ -9,7 +11,7 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    pass
+    user_id: UUID
 
 
 class PostResponse(PostBase):
@@ -17,3 +19,8 @@ class PostResponse(PostBase):
 
     id: UUID
     date_posted: datetime
+    user_id: UUID
+
+
+class PostDetailsResponse(PostResponse):
+    author: UserResponse
