@@ -1,15 +1,13 @@
 from typing import Annotated
 from uuid import UUID
-
 from fastapi import Depends, HTTPException, status
-
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.config.database import get_db
-from app.api.v1.post.post_model import Post
-from app.api.v1.post.post_schema import PostCreate
+from app.config.database import get_db
+from app.models.post import Post
+from app.schemas.post import PostCreate
 
 
 async def get_all(db: Annotated[AsyncSession, Depends(get_db)]):

@@ -1,8 +1,6 @@
-
 from typing import Optional, Annotated
 from uuid import UUID
 import re
-
 from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_validator
 
 

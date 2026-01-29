@@ -1,18 +1,13 @@
 from typing import Annotated
-
 from fastapi import Depends, HTTPException, status
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from jwt.exceptions import InvalidTokenError
 
-from app.api.v1.user.user_schema import UserCreate
-from app.shared.config.database import get_db
-from app.api.v1.user.user_model import User
-from app.shared.utils.password import hash_password
-from app.shared.utils.jwt import decode_token
-from app.api.v1.auth.auth_service import oauth2_scheme
+from app.schemas.user import UserCreate
+from app.config.database import get_db
+from app.models.user import User
+from app.utils.security import hash_password, decode_token, oauth2_scheme
 
 
 async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):

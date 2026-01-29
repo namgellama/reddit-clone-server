@@ -1,28 +1,22 @@
 from typing import Annotated
-
 from fastapi import Depends,  HTTPException, status, Response, Request
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
+from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.user import user_service
-from app.shared.config.database import get_db
-from app.api.v1.user.user_model import User
-from app.shared.utils.password import verify_password
-from app.shared.utils.jwt import create_token, decode_token
-from app.shared.utils.cookie import set_cookie, delete_cookie
-from app.api.v1.auth.auth_schema import RegisterEmail, VerifyEmail, GoogleUser
-from app.api.v1.user.user_schema import UserCreate
-from app.shared.services import mail_service
-from app.shared.utils.otp import generate_otp, store_otp, verify_otp
-from app.shared.config.oauth import oauth
+from app.config.database import get_db
+from app.models.user import User
+from app.utils.security import verify_password, create_token, decode_token
+from app.utils.cookie import set_cookie, delete_cookie
+from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
+from app.schemas.user import UserCreate
+from app.utils import mail
+from app.utils.otp import generate_otp, store_otp, verify_otp
+from app.config.oauth import oauth
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+from . import user as user_service
 
 
 async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -35,7 +29,7 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
     otp = generate_otp()
     await store_otp(f"otp:{payload.email}", 300, otp)
 
-    await mail_service.send_mail(
+    await mail.send_mail(
         subject="Verify your email",
         recipients=[payload.email],
         body=f"""
@@ -71,10 +65,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
 
-    if not user:
-        raise credentials_exception
-
-    if not verify_password(form_data.password, user.password):
+    if not user or not verify_password(form_data.password, user.password):
         raise credentials_exception
 
     access_token = create_token(
@@ -87,7 +78,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     set_cookie(response=response, key="refresh_token",
                value=refresh_token, max_age=60*60*24*7)
 
-    return {"access_token": access_token}
+    return access_token
 
 
 async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)], response: Response):

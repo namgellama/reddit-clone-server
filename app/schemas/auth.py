@@ -18,3 +18,8 @@ class GoogleUser(BaseModel):
     email: str
     name: str
     picture: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

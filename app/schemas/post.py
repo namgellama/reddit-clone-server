@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict
 
-from app.api.v1.user.user_schema import UserResponse
+from .user import UserResponse
 
 
 class PostBase(BaseModel):

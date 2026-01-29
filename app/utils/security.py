@@ -1,9 +1,25 @@
 from typing import Literal
 from datetime import datetime, timedelta, timezone
-
 import jwt
+from pwdlib import PasswordHash
+from fastapi.security import OAuth2PasswordBearer
 
-from app.shared.config import env
+
+from app.config import env
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+
+
+password_hash = PasswordHash.recommended()
+
+
+def hash_password(password: str) -> str:
+    return password_hash.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str):
+    return password_hash.verify(plain_password, hashed_password)
 
 
 def create_token(data: dict, type: Literal["access", "refresh"]):
@@ -28,5 +44,11 @@ def decode_token(token: str, type: Literal["access", "refresh"]):
     else:
         secret_key = env.JWT_REFRESH_SECRET
 
-    payload = jwt.decode(token, secret_key, algorithms=["HS256"])
-    return payload.get("sub")
+    print("token", token)
+
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return None
+    else:
+        return payload.get("sub")
