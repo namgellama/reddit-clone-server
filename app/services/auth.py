@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import Depends,  HTTPException, status, Response, Request
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
 from sqlalchemy import select
@@ -8,8 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.database import get_db
 from app.models.user import User
-from app.utils.password import verify_password
-from app.utils.jwt import create_token, decode_token
+from app.utils.security import verify_password, create_token, decode_token
 from app.utils.cookie import set_cookie, delete_cookie
 from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
 from app.schemas.user import UserCreate
@@ -18,9 +17,6 @@ from app.utils.otp import generate_otp, store_otp, verify_otp
 from app.config.oauth import oauth
 
 from . import user as user_service
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]):

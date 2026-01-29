@@ -7,10 +7,7 @@ from jwt.exceptions import InvalidTokenError
 from app.schemas.user import UserCreate
 from app.config.database import get_db
 from app.models.user import User
-from app.utils.password import hash_password
-from app.utils.jwt import decode_token
-
-from .auth import oauth2_scheme
+from app.utils.security import hash_password, decode_token, oauth2_scheme
 
 
 async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
