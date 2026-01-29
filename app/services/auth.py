@@ -1,25 +1,23 @@
 from typing import Annotated
-
 from fastapi import Depends,  HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.user import user_service
 from app.config.database import get_db
-from app.api.v1.user.user_model import User
+from app.models.user import User
 from app.utils.password import verify_password
 from app.utils.jwt import create_token, decode_token
 from app.utils.cookie import set_cookie, delete_cookie
-from app.api.v1.auth.auth_schema import RegisterEmail, VerifyEmail, GoogleUser
-from app.api.v1.user.user_schema import UserCreate
+from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser
+from app.schemas.user import UserCreate
 from app.utils import mail
 from app.utils.otp import generate_otp, store_otp, verify_otp
 from app.config.oauth import oauth
+
+from . import user as user_service
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")

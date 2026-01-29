@@ -1,9 +1,8 @@
 from typing import Literal
 from datetime import datetime, timedelta, timezone
-
 import jwt
 
-from app.shared.config import env
+from app.config import env
 
 
 def create_token(data: dict, type: Literal["access", "refresh"]):

@@ -1,12 +1,10 @@
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, status
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.config.database import get_db
-from app.api.v1.user.user_schema import UserResponse
-from app.api.v1.user import user_service
+from app.config.database import get_db
+from app.schemas.user import UserResponse
+from app.services import user as user_service
 
 router = APIRouter()
 

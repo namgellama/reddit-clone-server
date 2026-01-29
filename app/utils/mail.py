@@ -1,8 +1,7 @@
 from pydantic import EmailStr
-
 from fastapi_mail import FastMail, MessageSchema
 
-from app.shared.config.mail import conf
+from app.config.mail import conf
 
 
 async def send_mail(subject: str, recipients: list[EmailStr], body: str):

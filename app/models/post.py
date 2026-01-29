@@ -1,14 +1,12 @@
 from __future__ import annotations
-
 from uuid import uuid4
 from datetime import UTC, datetime
-
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
-from app.api.v1.user.user_model import User
+from .user import User
 
 
 class Post(Base):
