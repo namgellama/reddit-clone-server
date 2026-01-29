@@ -65,10 +65,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
 
-    if not user:
-        raise credentials_exception
-
-    if not verify_password(form_data.password, user.password):
+    if not user or not verify_password(form_data.password, user.password):
         raise credentials_exception
 
     access_token = create_token(
@@ -81,7 +78,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     set_cookie(response=response, key="refresh_token",
                value=refresh_token, max_age=60*60*24*7)
 
-    return {"access_token": access_token}
+    return access_token
 
 
 async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)], response: Response):

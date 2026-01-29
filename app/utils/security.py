@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from app.config import env
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
 
 password_hash = PasswordHash.recommended()
@@ -44,5 +44,11 @@ def decode_token(token: str, type: Literal["access", "refresh"]):
     else:
         secret_key = env.JWT_REFRESH_SECRET
 
-    payload = jwt.decode(token, secret_key, algorithms=["HS256"])
-    return payload.get("sub")
+    print("token", token)
+
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return None
+    else:
+        return payload.get("sub")
