@@ -86,3 +86,26 @@ async def update(payload: CommentUpdate, db: AsyncSession):
     await db.commit()
     await db.refresh(comment)
     return comment
+
+
+async def delete(post_id: UUID, comment_id: UUID, user_id: UUID, db: AsyncSession):
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    post = result.scalars().first()
+
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    result = await db.execute(select(Comment).where(Comment.id == comment_id and Post.id == post_id))
+    comment = result.scalars().first()
+
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+
+    if comment.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
+
+    await db.delete(comment)
+    await db.commit()
