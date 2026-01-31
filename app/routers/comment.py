@@ -12,6 +12,13 @@ from app.services.user import get_current_user
 
 router = APIRouter()
 
+"""
+    @desc Get all comments
+    @route GET /api/v1/posts/:post_id/comments
+    @access Public
+
+"""
+
 
 @router.get("/", response_model=APIResponse[list[CommentResponse]])
 async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -19,12 +26,26 @@ async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db
 
     return APIResponse(success=True, message="Comments fetched successfully", data=comments)
 
+"""
+    @desc Get a comment
+    @route GET /api/v1/posts/:post_id/comments/:comment_id
+    @access Public
+
+"""
+
 
 @router.get("/{comment_id}", response_model=APIResponse[CommentResponse])
 async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     comment = await comment_service.get_by_id(post_id=post_id, comment_id=comment_id, db=db)
 
     return APIResponse(success=True, message="Comment fetched successfully", data=comment)
+
+"""
+    @desc Create a comment
+    @route POST /api/v1/posts/:post_id/comments
+    @access Private
+
+"""
 
 
 @router.post("/", response_model=APIResponse[CommentResponse])
@@ -36,6 +57,14 @@ async def create_comment(post_id: UUID, body: CommentBase, current_user: Annotat
     return APIResponse(success=True, message="Comment fetched successfully", data=new_comment)
 
 
+"""
+    @desc Update a comment
+    @route PATCH /api/v1/posts/:post_id/comments/:comment_id
+    @access Private
+
+"""
+
+
 @router.patch("/${comment_id}", response_model=APIResponse[CommentResponse])
 async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
     payload = CommentUpdate(**body.model_dump(),
@@ -44,14 +73,12 @@ async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, cur
 
     return APIResponse(success=True, message="Comment updated successfully", data=updated_comment)
 
+"""
+    @desc Delete a comment
+    @route DELETE /api/v1/posts/:post_id/comments/:comment_id
+    @access Private
 
-@router.patch("/${comment_id}", response_model=APIResponse[CommentResponse])
-async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
-    payload = CommentUpdate(**body.model_dump(),
-                            user_id=current_user.id, post_id=post_id, id=comment_id)
-    updated_comment = await comment_service.update(payload=payload, db=db)
-
-    return APIResponse(success=True, message="Comment updated successfully", data=updated_comment)
+"""
 
 
 @router.delete("/${comment_id}", response_model=APIResponse[None])

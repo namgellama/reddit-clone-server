@@ -1,17 +1,17 @@
-from typing import Annotated
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 
-from app.config.database import get_db
 from app.models.comment import Comment
 from app.models.post import Post
 from app.schemas.comment import CommentCreate, CommentUpdate
 
+# Get all
 
-async def get_all(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+
+async def get_all(post_id: UUID, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == post_id))
     existing_post = result.scalars().first()
 
@@ -24,6 +24,7 @@ async def get_all(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     return comments
 
 
+# Get by id
 async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == post_id))
     existing_post = result.scalars().first()
@@ -42,6 +43,7 @@ async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
     return existing_comment
 
 
+# Create
 async def create(payload: CommentCreate, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == payload.post_id))
     existing_post = result.scalars().first()
@@ -59,6 +61,7 @@ async def create(payload: CommentCreate, db: AsyncSession):
     return new_comment
 
 
+# Update
 async def update(payload: CommentUpdate, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == payload.post_id))
     post = result.scalars().first()
@@ -88,6 +91,7 @@ async def update(payload: CommentUpdate, db: AsyncSession):
     return comment
 
 
+# Delete
 async def delete(post_id: UUID, comment_id: UUID, user_id: UUID, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalars().first()
