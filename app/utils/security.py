@@ -44,8 +44,6 @@ def decode_token(token: str, type: Literal["access", "refresh"]):
     else:
         secret_key = env.JWT_REFRESH_SECRET
 
-    print("token", token)
-
     try:
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
     except jwt.InvalidTokenError:

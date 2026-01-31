@@ -12,6 +12,10 @@ class CommentCreate(CommentBase):
     post_id: UUID
 
 
+class CommentUpdate(CommentCreate):
+    id: UUID
+
+
 class CommentResponse(CommentBase):
     model_config = ConfigDict(from_attributes=True)
 
