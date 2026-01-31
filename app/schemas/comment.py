@@ -7,6 +7,11 @@ class CommentBase(BaseModel):
     content: str = Field(min_length=1)
 
 
+class CommentCreate(CommentBase):
+    user_id: UUID
+    post_id: UUID
+
+
 class CommentResponse(CommentBase):
     model_config = ConfigDict(from_attributes=True)
 

@@ -55,7 +55,6 @@ async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(ge
 @router.post("/login", response_model=Token)
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)], response: Response):
     access_token = await auth_service.login(form_data=form_data, db=db, response=response)
-    print("access_token from login", access_token)
 
     return Token(
         access_token=access_token,

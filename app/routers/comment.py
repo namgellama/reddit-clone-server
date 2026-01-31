@@ -6,7 +6,9 @@ from uuid import UUID
 from app.config.database import get_db
 from app.services import comment as comment_service
 from app.schemas.response import APIResponse
-from app.schemas.comment import CommentResponse
+from app.schemas.comment import CommentResponse, CommentCreate, CommentBase
+from app.schemas.user import UserResponse
+from app.services.user import get_current_user
 
 router = APIRouter()
 
@@ -23,3 +25,12 @@ async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSessio
     comment = await comment_service.get_by_id(post_id=post_id, comment_id=comment_id, db=db)
 
     return APIResponse(success=True, message="Comment fetched successfully", data=comment)
+
+
+@router.post("/", response_model=APIResponse[CommentResponse])
+async def create_comment(post_id: UUID, body: CommentBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)],):
+    payload = CommentCreate(**body.model_dump(),
+                            user_id=current_user.id, post_id=post_id)
+    new_comment = await comment_service.create(payload=payload, db=db)
+
+    return APIResponse(success=True, message="Comment fetched successfully", data=new_comment)

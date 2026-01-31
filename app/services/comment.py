@@ -8,6 +8,7 @@ from uuid import UUID
 from app.config.database import get_db
 from app.models.comment import Comment
 from app.models.post import Post
+from app.schemas.comment import CommentCreate
 
 
 async def get_all(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -39,3 +40,20 @@ async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
             status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     return existing_comment
+
+
+async def create(payload: CommentCreate, db: AsyncSession):
+    result = await db.execute(select(Post).where(Post.id == payload.post_id))
+    existing_post = result.scalars().first()
+
+    if not existing_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    new_comment = Comment(content=payload.content,
+                          post_id=payload.post_id, user_id=payload.user_id)
+
+    db.add(new_comment)
+    await db.commit()
+    await db.refresh(new_comment)
+    return new_comment
