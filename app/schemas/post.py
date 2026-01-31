@@ -14,6 +14,10 @@ class PostCreate(PostBase):
     user_id: UUID
 
 
+class PostUpdate(PostCreate):
+    id: UUID
+
+
 class PostResponse(PostBase):
     model_config = ConfigDict(from_attributes=True)
 
