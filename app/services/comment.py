@@ -1,0 +1,23 @@
+from typing import Annotated
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from uuid import UUID
+
+from app.config.database import get_db
+from app.models.comment import Comment
+from app.models.post import Post
+
+
+async def get_all(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    existing_post = result.scalars().first()
+
+    if not existing_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    result = await db.execute(select(Comment).options(selectinload(Comment.user)).where(Comment.post_id == post_id))
+    comments = result.scalars().all()
+    return comments

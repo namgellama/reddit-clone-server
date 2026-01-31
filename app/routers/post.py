@@ -17,6 +17,7 @@ router = APIRouter()
 @router.get("/", response_model=APIResponse[list[PostResponse]])
 async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
     posts = await post_service.get_all(db)
+
     return APIResponse(success=True, message="Posts fetched successfully", data=posts)
 
 

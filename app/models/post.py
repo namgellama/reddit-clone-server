@@ -22,4 +22,4 @@ class Post(Base):
         ForeignKey("users.id"), nullable=False, index=True)
 
     author: Mapped[User] = relationship(back_populates="posts")
-    comments: Mapped[list["Comment"]] = relationship(back_populates="posts")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="post")
