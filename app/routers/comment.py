@@ -16,3 +16,10 @@ async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db
     comments = await comment_service.get_all(post_id=post_id, db=db)
 
     return APIResponse(success=True, message="Comments fetched successfully", data=comments)
+
+
+@router.get("/{comment_id}", response_model=APIResponse[CommentResponse])
+async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    comment = await comment_service.get_by_id(post_id=post_id, comment_id=comment_id, db=db)
+
+    return APIResponse(success=True, message="Comment fetched successfully", data=comment)

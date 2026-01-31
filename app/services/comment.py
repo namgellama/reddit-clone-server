@@ -21,3 +21,21 @@ async def get_all(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(Comment).options(selectinload(Comment.user)).where(Comment.post_id == post_id))
     comments = result.scalars().all()
     return comments
+
+
+async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    existing_post = result.scalars().first()
+
+    if not existing_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    result = await db.execute(select(Comment).where(Comment.id == comment_id and Post.id == post_id))
+    existing_comment = result.scalars().first()
+
+    if not existing_comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+
+    return existing_comment
