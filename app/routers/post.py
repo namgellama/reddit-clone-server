@@ -42,6 +42,7 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 
     return APIResponse(success=True, message="Post fetched successfully", data=PostDetailsResponse.model_validate(post))
 
+
 """
     @desc Create a post
     @route POST /api/v1/posts

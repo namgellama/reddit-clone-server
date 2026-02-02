@@ -12,6 +12,7 @@ from app.services.user import get_current_user
 
 router = APIRouter()
 
+
 """
     @desc Get all comments
     @route GET /api/v1/posts/:post_id/comments
@@ -26,6 +27,7 @@ async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db
 
     return APIResponse(success=True, message="Comments fetched successfully", data=comments)
 
+
 """
     @desc Get a comment
     @route GET /api/v1/posts/:post_id/comments/:comment_id
@@ -39,6 +41,7 @@ async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSessio
     comment = await comment_service.get_by_id(post_id=post_id, comment_id=comment_id, db=db)
 
     return APIResponse(success=True, message="Comment fetched successfully", data=comment)
+
 
 """
     @desc Create a comment
@@ -72,6 +75,7 @@ async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, cur
     updated_comment = await comment_service.update(payload=payload, db=db)
 
     return APIResponse(success=True, message="Comment updated successfully", data=updated_comment)
+
 
 """
     @desc Delete a comment

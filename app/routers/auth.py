@@ -16,6 +16,14 @@ from app.config import env
 router = APIRouter()
 
 
+"""
+    @desc Register email
+    @route POST /api/v1/auth/register-email
+    @access Public
+
+"""
+
+
 @router.post("/register-email", response_model=APIResponse[None])
 async def register_email(body: RegisterEmail,  db: Annotated[AsyncSession, Depends(get_db)]):
     await auth_service.register_email(payload=body, db=db)
@@ -25,6 +33,14 @@ async def register_email(body: RegisterEmail,  db: Annotated[AsyncSession, Depen
         message="Otp has been sent to your email.",
         data=None
     )
+
+
+"""
+    @desc Verify email
+    @route POST /api/v1/auth/verify-email
+    @access Public
+
+"""
 
 
 @router.post("/verify-email", response_model=APIResponse[None])
@@ -41,6 +57,14 @@ async def register_email(body: VerifyEmail,  db: Annotated[AsyncSession, Depends
     )
 
 
+"""
+    @desc Register user
+    @route POST /api/v1/auth/register
+    @access Public
+
+"""
+
+
 @router.post("/register", response_model=APIResponse[UserResponse], status_code=201)
 async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     new_user = await auth_service.register_user(payload=body, db=db)
@@ -50,6 +74,14 @@ async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(ge
         message="User registered successfully",
         data=new_user
     )
+
+
+"""
+    @desc Login user
+    @route POST /api/v1/auth/login
+    @access Public
+
+"""
 
 
 @router.post("/login", response_model=Token)
@@ -62,9 +94,25 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     )
 
 
+"""
+    @desc Login with google
+    @route POST /api/v1/auth/google
+    @access Public
+
+"""
+
+
 @router.get("/google")
 async def login_google(request: Request):
     return await oauth.google.authorize_redirect(request, env.GOOGLE_REDIRECT_URI)
+
+
+"""
+    @desc Google callback
+    @route POST /api/v1/auth/google/callback
+    @access Public
+
+"""
 
 
 @router.get("/google/callback")
@@ -72,6 +120,14 @@ async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_
     data = await auth_service.google_callback(request=request, db=db, response=response)
 
     return RedirectResponse(url=f"{env.FRONTEND_URL}/auth?access_token={data['access_token']}")
+
+
+"""
+    @desc Logout user
+    @route POST /api/v1/auth/logout
+    @access Public
+
+"""
 
 
 @router.post("/logout", response_model=APIResponse[None])
@@ -83,6 +139,14 @@ def logout(response: Response):
         message="You have been logged out successfully",
         data=None
     )
+
+
+"""
+    @desc Refresh token
+    @route POST /api/v1/auth/refresh-token
+    @access Private
+
+"""
 
 
 @router.post("/refresh-token", response_model=APIResponse[LoginResponse])
