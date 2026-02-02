@@ -8,9 +8,8 @@ from app.models.comment import Comment
 from app.models.post import Post
 from app.schemas.comment import CommentCreate, CommentUpdate
 
+
 # Get all
-
-
 async def get_all(post_id: UUID, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == post_id))
     existing_post = result.scalars().first()

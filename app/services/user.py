@@ -10,6 +10,7 @@ from app.models.user import User
 from app.utils.security import hash_password, decode_token, oauth2_scheme
 
 
+# Get user by id
 async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.id == id))
     user = result.scalars().first()
@@ -17,6 +18,7 @@ async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
     return user
 
 
+# Get user by email
 async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalars().first()
@@ -24,6 +26,7 @@ async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_
     return user
 
 
+# Get user by username
 async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalars().first()
@@ -31,6 +34,7 @@ async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depend
     return user
 
 
+# Get user by google sub
 async def get_user_by_google_sub(google_sub: str, db: Annotated[AsyncSession, Depends(get_db)]):
     print("googele_sub", google_sub)
     result = await db.execute(select(User).where(User.google_sub == google_sub))
@@ -39,6 +43,7 @@ async def get_user_by_google_sub(google_sub: str, db: Annotated[AsyncSession, De
     return user
 
 
+# Get current user
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_db)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -63,6 +68,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: An
     return user
 
 
+# Create
 async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.username == payload.username))
     existingUsername = result.scalars().first()

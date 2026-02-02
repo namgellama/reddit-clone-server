@@ -19,6 +19,7 @@ from app.config.oauth import oauth
 from . import user as user_service
 
 
+# Register email
 async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]):
     existing_email = await user_service.get_user_by_email(email=payload.email, db=db)
 
@@ -41,6 +42,7 @@ async def register_email(payload: RegisterEmail, db: Annotated[AsyncSession, Dep
     )
 
 
+# Verify email
 async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]):
     existing_email = await user_service.get_user_by_email(email=payload.email, db=db)
 
@@ -51,10 +53,12 @@ async def verify_email(payload: VerifyEmail, db: Annotated[AsyncSession, Depends
     return await verify_otp(name=f"otp:{payload.email}", otp=payload.otp)
 
 
+# Register user
 async def register_user(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     return await user_service.create(payload=payload, db=db)
 
 
+# Login
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[AsyncSession, Depends(get_db)], response: Response):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -81,6 +85,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
     return access_token
 
 
+# Google callback
 async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)], response: Response):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
@@ -119,10 +124,12 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)],
     return {"access_token": access_token}
 
 
+# Logout
 def logout(response: Response):
     delete_cookie(response=response, key="refresh_token")
 
 
+# Refresh token
 async def refresh_token(request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]):
     refresh_token = request.cookies.get("refresh_token")
 
