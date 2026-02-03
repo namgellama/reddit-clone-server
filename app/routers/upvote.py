@@ -27,19 +27,24 @@ async def toggle_upvote(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = UpvoteCreate(**body.model_dump(), user_id=current_user.id)
-    new_upvote = await upvote_service.toggle(payload=payload, db=db)
+    upvote = await upvote_service.toggle(payload=payload, db=db)
 
-    if new_upvote:
+    if payload.post_id:
+        message = "Post upvoted" if upvote else "Post upvote removed"
+    else:
+        message = "Comment upvoted" if upvote else "Comment upvote removed"
+
+    if upvote:
         response.status_code = status.HTTP_201_CREATED
         return APIResponse(
             success=True,
-            message="Upvoted successfully",
+            message=message,
             data=UpvoteResponse(upvoted=True),
         )
 
     response.status_code = status.HTTP_200_OK
     return APIResponse(
         success=True,
-        message="Upvote removed successfully",
+        message=message,
         data=UpvoteResponse(upvoted=False),
     )
