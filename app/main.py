@@ -10,6 +10,7 @@ from app.routers import auth
 from app.routers import user
 from app.routers import post
 from app.routers import comment
+from app.routers import upvote
 
 
 @asynccontextmanager
@@ -57,3 +58,5 @@ app.include_router(user.router, prefix="/api/v1/users", tags=["User"])
 app.include_router(post.router,  prefix="/api/v1/posts", tags=["Post"])
 app.include_router(
     comment.router,  prefix="/api/v1/posts/{post_id}/comments", tags=["Comment"])
+app.include_router(
+    upvote.router,  prefix="/api/v1/upvotes", tags=["Upvote"])

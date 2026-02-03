@@ -2,7 +2,7 @@ from __future__ import annotations
 from uuid import uuid4
 from datetime import UTC, datetime
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy import DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
@@ -31,8 +31,10 @@ class Comment(Base):
 
     user: Mapped[User] = relationship(back_populates="comments")
     post: Mapped[Post] = relationship(back_populates="comments")
+    upvotes: Mapped[list["Upvote"]] = relationship(
+        back_populates="comment",  cascade="all, delete-orphan")
 
     parent: Mapped[Comment | None] = relationship(
         "Comment", remote_side=[id], back_populates="replies")
     replies: Mapped[list[Comment]] = relationship(
-        "Comment", back_populates="parent")
+        "Comment", back_populates="parent",  cascade="all, delete-orphan")

@@ -10,6 +10,7 @@ from app.config import env
 from app.models.user import User
 from app.models.post import Post
 from app.models.comment import Comment
+from app.models.upvote import Upvote
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
