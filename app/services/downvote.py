@@ -6,6 +6,7 @@ from app.schemas.downvote import DownvoteCreate, DownvoteCreateResponse
 from app.models.downvote import Downvote
 from app.services import post as post_service
 from app.services import comment as comment_service
+from app.services import upvote as upvote_service
 
 
 # Get by user id and post id
@@ -64,7 +65,15 @@ async def toggle(
         )
 
         if not downvote:
-            return await create(payload=payload, db=db)
+            new_downvote = await create(payload=payload, db=db)
+            upvote = await upvote_service.get_by_user_id_and_post_id(
+                user_id=payload.user_id, post_id=payload.post_id, db=db
+            )
+
+            if upvote:
+                await upvote_service.delete(upvote=upvote, db=db)
+
+            return new_downvote
         else:
             await delete(downvote=downvote, db=db)
             return None
@@ -76,7 +85,15 @@ async def toggle(
         )
 
         if not downvote:
-            return await create(payload=payload, db=db)
+            new_downvote = await create(payload=payload, db=db)
+            upvote = await upvote_service.get_by_user_id_and_comment_id(
+                user_id=payload.user_id, comment_id=payload.comment_id, db=db
+            )
+
+            if upvote:
+                await upvote_service.delete(upvote=upvote, db=db)
+
+            return new_downvote
         else:
             await delete(downvote=downvote, db=db)
             return None
