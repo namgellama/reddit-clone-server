@@ -6,10 +6,7 @@ from app.config.mail import conf
 
 async def send_mail(subject: str, recipients: list[EmailStr], body: str):
     message = MessageSchema(
-        subject=subject,
-        recipients=recipients,
-        body=body,
-        subtype="html"
+        subject=subject, recipients=recipients, body=body, subtype="html"
     )
 
     fm = FastMail(conf)

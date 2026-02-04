@@ -36,6 +36,7 @@ async def toggle_upvote(
 
     if upvote:
         response.status_code = status.HTTP_201_CREATED
+
         return APIResponse(
             success=True,
             message=message,
@@ -43,6 +44,7 @@ async def toggle_upvote(
         )
 
     response.status_code = status.HTTP_200_OK
+
     return APIResponse(
         success=True,
         message=message,

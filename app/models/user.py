@@ -10,19 +10,21 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
-    username: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
-    password: Mapped[str | None] = mapped_column(
-        String, nullable=True, default=None)
+        UUID(as_uuid=True), primary_key=True, default=uuid4, index=True
+    )
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    password: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     google_sub: Mapped[str | None] = mapped_column(
-        String, unique=True, nullable=True, default=None)
+        String, unique=True, nullable=True, default=None
+    )
 
     posts: Mapped[list["Post"]] = relationship(
-        back_populates="author", cascade="all, delete-orphan")
+        back_populates="author", cascade="all, delete-orphan"
+    )
     comments: Mapped[list["Comment"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan")
+        back_populates="user", cascade="all, delete-orphan"
+    )
     upvotes: Mapped[list["Upvote"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan")
+        back_populates="user", cascade="all, delete-orphan"
+    )

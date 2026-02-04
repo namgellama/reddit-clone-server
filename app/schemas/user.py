@@ -20,8 +20,7 @@ class UserCreate(UserBase):
             return v  # allow null password
 
         if not re.search(r"[A-Z]", v):
-            raise ValueError(
-                "Password must contain at least one uppercase letter")
+            raise ValueError("Password must contain at least one uppercase letter")
 
         if not re.search(r"[^A-Za-z0-9]", v):
             raise ValueError("Password must contain at least one symbol")

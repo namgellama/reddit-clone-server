@@ -7,6 +7,7 @@ from uuid import UUID
 from app.models.comment import Comment
 from app.models.post import Post
 from app.schemas.comment import CommentCreate, CommentUpdate
+from app.services import post as post_service
 
 
 # Get all
@@ -29,18 +30,8 @@ async def get_all(post_id: UUID, db: AsyncSession):
 
 
 # Get by id
-async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
-    result = await db.execute(select(Post).where(Post.id == post_id))
-    existing_post = result.scalars().first()
-
-    if not existing_post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
-        )
-
-    result = await db.execute(
-        select(Comment).where(Comment.id == comment_id and Post.id == post_id)
-    )
+async def get_by_id(id: UUID, db: AsyncSession):
+    result = await db.execute(select(Comment).where(Comment.id == id))
     existing_comment = result.scalars().first()
 
     if not existing_comment:
@@ -51,9 +42,15 @@ async def get_by_id(post_id: UUID, comment_id: UUID, db: AsyncSession):
     return existing_comment
 
 
-# Get by only id
-async def get_by_only_id(id: UUID, db: AsyncSession):
-    result = await db.execute(select(Comment).where(Comment.id == id))
+# Get by post id and comment id
+async def get_by_post_id_and_comment_id(
+    post_id: UUID, comment_id: UUID, db: AsyncSession
+):
+    await post_service.get_by_id(id=post_id)
+
+    result = await db.execute(
+        select(Comment).where((Comment.id == comment_id) & (Post.id == post_id))
+    )
     existing_comment = result.scalars().first()
 
     if not existing_comment:
@@ -66,13 +63,7 @@ async def get_by_only_id(id: UUID, db: AsyncSession):
 
 # Create
 async def create(payload: CommentCreate, db: AsyncSession):
-    result = await db.execute(select(Post).where(Post.id == payload.post_id))
-    existing_post = result.scalars().first()
-
-    if not existing_post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
-        )
+    await post_service.get_by_id(id=payload.post_id, db=db)
 
     new_comment = Comment(
         content=payload.content, post_id=payload.post_id, user_id=payload.user_id
@@ -86,23 +77,9 @@ async def create(payload: CommentCreate, db: AsyncSession):
 
 # Update
 async def update(payload: CommentUpdate, db: AsyncSession):
-    result = await db.execute(select(Post).where(Post.id == payload.post_id))
-    post = result.scalars().first()
-
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
-        )
-
-    result = await db.execute(
-        select(Comment).where(Comment.id == payload.id and Post.id == payload.post_id)
+    comment = await get_by_post_id_and_comment_id(
+        post_id=payload.post_id, comment_id=payload.id, db=db
     )
-    comment = result.scalars().first()
-
-    if not comment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
 
     if comment.user_id != payload.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
@@ -119,23 +96,9 @@ async def update(payload: CommentUpdate, db: AsyncSession):
 
 # Delete
 async def delete(post_id: UUID, comment_id: UUID, user_id: UUID, db: AsyncSession):
-    result = await db.execute(select(Post).where(Post.id == post_id))
-    post = result.scalars().first()
-
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
-        )
-
-    result = await db.execute(
-        select(Comment).where(Comment.id == comment_id and Post.id == post_id)
+    comment = await get_by_post_id_and_comment_id(
+        post_id=post_id, comment_id=comment_id, db=db
     )
-    comment = result.scalars().first()
-
-    if not comment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
 
     if comment.user_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")

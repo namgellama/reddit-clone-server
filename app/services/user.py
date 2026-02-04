@@ -11,7 +11,7 @@ from app.utils.security import hash_password, decode_token, oauth2_scheme
 
 
 # Get user by id
-async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.id == id))
     user = result.scalars().first()
 
@@ -19,7 +19,7 @@ async def get_user_by_id(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
 
 
 # Get user by email
-async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_by_email(email: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalars().first()
 
@@ -27,7 +27,7 @@ async def get_user_by_email(email: str, db: Annotated[AsyncSession, Depends(get_
 
 
 # Get user by username
-async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_by_username(username: str, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalars().first()
 
@@ -35,7 +35,9 @@ async def get_user_by_username(username: str, db: Annotated[AsyncSession, Depend
 
 
 # Get user by google sub
-async def get_user_by_google_sub(google_sub: str, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_by_google_sub(
+    google_sub: str, db: Annotated[AsyncSession, Depends(get_db)]
+):
     print("googele_sub", google_sub)
     result = await db.execute(select(User).where(User.google_sub == google_sub))
     user = result.scalars().first()
@@ -44,7 +46,10 @@ async def get_user_by_google_sub(google_sub: str, db: Annotated[AsyncSession, De
 
 
 # Get current user
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -60,8 +65,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: An
     except InvalidTokenError:
         raise credentials_exception
 
-    result = await db.execute(select(User).where(User.id == id))
-    user = result.scalars().first()
+    user = await get_by_id(id=id, db=db)
 
     if user is None:
         raise credentials_exception
@@ -70,25 +74,29 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: An
 
 # Create
 async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(User).where(User.username == payload.username))
-    existingUsername = result.scalars().first()
+    username = await get_by_username(username=payload.username, db=db)
 
-    if existingUsername:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="Username already exists")
+    if username:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Username already exists"
+        )
 
-    result = await db.execute(select(User).where(User.email == payload.email))
-    existingEmail = result.scalars().first()
+    email = await get_by_email(email=payload.email)
 
-    if existingEmail:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="Email already exists")
+    if email:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
+        )
 
     if payload.password:
         payload.password = hash_password(payload.password)
 
-    new_user = User(username=payload.username,
-                    email=payload.email, password=payload.password, google_sub=payload.google_sub)
+    new_user = User(
+        username=payload.username,
+        email=payload.email,
+        password=payload.password,
+        google_sub=payload.google_sub,
+    )
 
     db.add(new_user)
     await db.commit()
