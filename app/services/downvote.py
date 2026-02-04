@@ -2,8 +2,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.upvote import UpvoteCreate, UpvoteCreateResponse
-from app.models.upvote import Upvote
+from app.schemas.downvote import DownvoteCreate, DownvoteCreateResponse
+from app.models.downvote import Downvote
 from app.services import post as post_service
 from app.services import comment as comment_service
 
@@ -11,7 +11,9 @@ from app.services import comment as comment_service
 # Get by user id and post id
 async def get_by_user_id_and_post_id(user_id: UUID, post_id: UUID, db: AsyncSession):
     result = await db.execute(
-        select(Upvote).where((Upvote.user_id == user_id) & (Upvote.post_id == post_id))
+        select(Downvote).where(
+            (Downvote.user_id == user_id) & (Downvote.post_id == post_id)
+        )
     )
 
     return result.scalars().first()
@@ -22,8 +24,8 @@ async def get_by_user_id_and_comment_id(
     user_id: UUID, comment_id: UUID, db: AsyncSession
 ):
     result = await db.execute(
-        select(Upvote).where(
-            (Upvote.user_id == user_id) & (Upvote.comment_id == comment_id)
+        select(Downvote).where(
+            (Downvote.user_id == user_id) & (Downvote.comment_id == comment_id)
         )
     )
 
@@ -31,50 +33,50 @@ async def get_by_user_id_and_comment_id(
 
 
 # Create
-async def create(payload: UpvoteCreate, db: AsyncSession):
-    new_upvote = Upvote(
+async def create(payload: DownvoteCreate, db: AsyncSession):
+    new_downvote = Downvote(
         post_id=payload.post_id,
         comment_id=payload.comment_id,
         user_id=payload.user_id,
     )
 
-    db.add(new_upvote)
+    db.add(new_downvote)
     await db.commit()
-    await db.refresh(new_upvote)
-    return new_upvote
+    await db.refresh(new_downvote)
+    return new_downvote
 
 
 # Delete
-async def delete(upvote: Upvote, db: AsyncSession):
-    await db.delete(upvote)
+async def delete(downvote: Downvote, db: AsyncSession):
+    await db.delete(downvote)
     await db.commit()
 
 
 # Toggle
 async def toggle(
-    payload: UpvoteCreate, db: AsyncSession
-) -> UpvoteCreateResponse | None:
+    payload: DownvoteCreate, db: AsyncSession
+) -> DownvoteCreateResponse | None:
     if payload.post_id:
         await post_service.get_by_id(id=payload.post_id, db=db)
 
-        upvote = await get_by_user_id_and_post_id(
+        downvote = await get_by_user_id_and_post_id(
             user_id=payload.user_id, post_id=payload.post_id, db=db
         )
 
-        if not upvote:
+        if not downvote:
             return await create(payload=payload, db=db)
         else:
-            await delete(upvote=upvote, db=db)
+            await delete(downvote=downvote, db=db)
             return None
     else:
         await comment_service.get_by_id(id=payload.comment_id, db=db)
 
-        upvote = await get_by_user_id_and_comment_id(
+        downvote = await get_by_user_id_and_comment_id(
             user_id=payload.user_id, comment_id=payload.comment_id, db=db
         )
 
-        if not upvote:
+        if not downvote:
             return await create(payload=payload, db=db)
         else:
-            await delete(upvote=upvote, db=db)
+            await delete(downvote=downvote, db=db)
             return None
