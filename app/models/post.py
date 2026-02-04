@@ -31,3 +31,6 @@ class Post(Base):
     upvotes: Mapped[list["Upvote"]] = relationship(
         back_populates="post", cascade="all, delete-orphan"
     )
+    downvotes: Mapped[list["Downvote"]] = relationship(
+        back_populates="post", cascade="all, delete-orphan"
+    )

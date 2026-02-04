@@ -38,6 +38,9 @@ class Comment(Base):
     upvotes: Mapped[list["Upvote"]] = relationship(
         back_populates="comment", cascade="all, delete-orphan"
     )
+    downvotes: Mapped[list["Downvote"]] = relationship(
+        back_populates="comment", cascade="all, delete-orphan"
+    )
 
     parent: Mapped[Comment | None] = relationship(
         "Comment", remote_side=[id], back_populates="replies"

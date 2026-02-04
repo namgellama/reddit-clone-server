@@ -28,3 +28,6 @@ class User(Base):
     upvotes: Mapped[list["Upvote"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    downvotes: Mapped[list["Downvote"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
