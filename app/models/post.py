@@ -13,16 +13,21 @@ class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
+        UUID(as_uuid=True), primary_key=True, default=uuid4, index=True
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     date_posted: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(UTC))
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id"), nullable=False, index=True)
+        ForeignKey("users.id"), nullable=False, index=True
+    )
 
     author: Mapped[User] = relationship(back_populates="posts")
     comments: Mapped[list["Comment"]] = relationship(
-        back_populates="post", cascade="all, delete-orphan")
+        back_populates="post", cascade="all, delete-orphan"
+    )
     upvotes: Mapped[list["Upvote"]] = relationship(
-        back_populates="post",  cascade="all, delete-orphan")
+        back_populates="post", cascade="all, delete-orphan"
+    )

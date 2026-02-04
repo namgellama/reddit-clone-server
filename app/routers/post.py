@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.database import get_db
-from app.schemas.post import PostResponse, PostCreate, PostBase, PostDetailsResponse, PostUpdate
+from app.schemas.post import (
+    PostResponse,
+    PostCreate,
+    PostBase,
+    PostDetailsResponse,
+    PostUpdate,
+)
 from app.schemas.user import UserResponse
 from app.services import post as post_service
 from app.services.user import get_current_user
@@ -40,7 +46,11 @@ async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
 async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     post = await post_service.get_by_id(id=id, db=db)
 
-    return APIResponse(success=True, message="Post fetched successfully", data=PostDetailsResponse.model_validate(post))
+    return APIResponse(
+        success=True,
+        message="Post fetched successfully",
+        data=PostDetailsResponse.model_validate(post),
+    )
 
 
 """
@@ -51,8 +61,14 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.post("/", response_model=APIResponse[PostResponse], status_code=status.HTTP_201_CREATED)
-async def create_post(body: PostBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+@router.post(
+    "/", response_model=APIResponse[PostResponse], status_code=status.HTTP_201_CREATED
+)
+async def create_post(
+    body: PostBase,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
     payload = PostCreate(**body.model_dump(), user_id=current_user.id)
     new_post = await post_service.create(payload=payload, db=db)
 
@@ -68,11 +84,18 @@ async def create_post(body: PostBase, current_user: Annotated[UserResponse, Depe
 
 
 @router.put("/{id}", response_model=APIResponse[PostResponse])
-async def update_post(id: UUID, body: PostBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def update_post(
+    id: UUID,
+    body: PostBase,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
     payload = PostUpdate(**body.model_dump(), user_id=current_user.id, id=id)
     updated_post = await post_service.update(payload=payload, db=db)
 
-    return APIResponse(success=True, message="Post updated successfully", data=updated_post)
+    return APIResponse(
+        success=True, message="Post updated successfully", data=updated_post
+    )
 
 
 """
@@ -84,7 +107,11 @@ async def update_post(id: UUID, body: PostBase, current_user: Annotated[UserResp
 
 
 @router.delete("/{id}", response_model=APIResponse[None])
-async def delete_post(id: UUID, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def delete_post(
+    id: UUID,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
     await post_service.delete(id=id, user_id=current_user.id, db=db)
 
     return APIResponse(success=True, message="Post deleted successfully", data=None)

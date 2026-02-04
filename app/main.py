@@ -30,6 +30,7 @@ async def lifespan(_app: FastAPI):
     await redis_client.close()
     print("🛑 Shutdown complete")
 
+
 app = FastAPI(lifespan=lifespan)
 
 
@@ -44,19 +45,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(
-    SessionMiddleware, secret_key=env.SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=env.SECRET_KEY)
 
 
-@app.get('/')
+@app.get("/")
 def index():
     return {"message": "Hello World"}
 
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(user.router, prefix="/api/v1/users", tags=["User"])
-app.include_router(post.router,  prefix="/api/v1/posts", tags=["Post"])
+app.include_router(post.router, prefix="/api/v1/posts", tags=["Post"])
 app.include_router(
-    comment.router,  prefix="/api/v1/posts/{post_id}/comments", tags=["Comment"])
-app.include_router(
-    upvote.router,  prefix="/api/v1/upvotes", tags=["Upvote"])
+    comment.router, prefix="/api/v1/posts/{post_id}/comments", tags=["Comment"]
+)
+app.include_router(upvote.router, prefix="/api/v1/upvotes", tags=["Upvote"])

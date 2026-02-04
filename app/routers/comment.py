@@ -6,7 +6,12 @@ from uuid import UUID
 from app.config.database import get_db
 from app.services import comment as comment_service
 from app.schemas.response import APIResponse
-from app.schemas.comment import CommentResponse, CommentCreate, CommentBase, CommentUpdate
+from app.schemas.comment import (
+    CommentResponse,
+    CommentCreate,
+    CommentBase,
+    CommentUpdate,
+)
 from app.schemas.user import UserResponse
 from app.services.user import get_current_user
 
@@ -25,7 +30,9 @@ router = APIRouter()
 async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     comments = await comment_service.get_all(post_id=post_id, db=db)
 
-    return APIResponse(success=True, message="Comments fetched successfully", data=comments)
+    return APIResponse(
+        success=True, message="Comments fetched successfully", data=comments
+    )
 
 
 """
@@ -37,10 +44,16 @@ async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db
 
 
 @router.get("/{comment_id}", response_model=APIResponse[CommentResponse])
-async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
-    comment = await comment_service.get_by_id(post_id=post_id, comment_id=comment_id, db=db)
+async def get_comment(
+    post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]
+):
+    comment = await comment_service.get_by_post_id_and_comment_id(
+        post_id=post_id, comment_id=comment_id, db=db
+    )
 
-    return APIResponse(success=True, message="Comment fetched successfully", data=comment)
+    return APIResponse(
+        success=True, message="Comment fetched successfully", data=comment
+    )
 
 
 """
@@ -52,12 +65,20 @@ async def get_comment(post_id: UUID, comment_id: UUID, db: Annotated[AsyncSessio
 
 
 @router.post("/", response_model=APIResponse[CommentResponse])
-async def create_comment(post_id: UUID, body: CommentBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
-    payload = CommentCreate(**body.model_dump(),
-                            user_id=current_user.id, post_id=post_id)
+async def create_comment(
+    post_id: UUID,
+    body: CommentBase,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    payload = CommentCreate(
+        **body.model_dump(), user_id=current_user.id, post_id=post_id
+    )
     new_comment = await comment_service.create(payload=payload, db=db)
 
-    return APIResponse(success=True, message="Comment fetched successfully", data=new_comment)
+    return APIResponse(
+        success=True, message="Comment fetched successfully", data=new_comment
+    )
 
 
 """
@@ -69,12 +90,21 @@ async def create_comment(post_id: UUID, body: CommentBase, current_user: Annotat
 
 
 @router.patch("/${comment_id}", response_model=APIResponse[CommentResponse])
-async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
-    payload = CommentUpdate(**body.model_dump(),
-                            user_id=current_user.id, post_id=post_id, id=comment_id)
+async def update_comment(
+    post_id: UUID,
+    comment_id: UUID,
+    body: CommentBase,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    payload = CommentUpdate(
+        **body.model_dump(), user_id=current_user.id, post_id=post_id, id=comment_id
+    )
     updated_comment = await comment_service.update(payload=payload, db=db)
 
-    return APIResponse(success=True, message="Comment updated successfully", data=updated_comment)
+    return APIResponse(
+        success=True, message="Comment updated successfully", data=updated_comment
+    )
 
 
 """
@@ -86,7 +116,14 @@ async def update_comment(post_id: UUID, comment_id: UUID, body: CommentBase, cur
 
 
 @router.delete("/${comment_id}", response_model=APIResponse[None])
-async def delete_comment(post_id: UUID, comment_id: UUID, current_user: Annotated[UserResponse, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
-    await comment_service.delete(post_id=post_id, comment_id=comment_id, user_id=current_user.id, db=db)
+async def delete_comment(
+    post_id: UUID,
+    comment_id: UUID,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    await comment_service.delete(
+        post_id=post_id, comment_id=comment_id, user_id=current_user.id, db=db
+    )
 
     return APIResponse(success=True, message="Comment deleted successfully", data=None)
