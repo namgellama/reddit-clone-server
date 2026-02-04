@@ -11,6 +11,7 @@ from app.models.user import User
 from app.models.post import Post
 from app.models.comment import Comment
 from app.models.upvote import Upvote
+from app.models.downvote import Downvote
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -32,10 +33,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-SYNC_DATABASE_URL = env.DATABASE_URL.replace(
-    "postgresql+asyncpg",
-    "postgresql"
-)
+SYNC_DATABASE_URL = env.DATABASE_URL.replace("postgresql+asyncpg", "postgresql")
 config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
 
 
@@ -77,9 +75,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
