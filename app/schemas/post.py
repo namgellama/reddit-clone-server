@@ -18,13 +18,26 @@ class PostUpdate(PostCreate):
     id: UUID
 
 
+class Count(BaseModel):
+    comment: int
+    upvote: int
+    downvote: int
+
+
 class PostResponse(PostBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     date_posted: datetime
     user_id: UUID
+    author: UserResponse
 
 
-class PostDetailsResponse(PostResponse):
+class PostResponseWithCount(PostBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    date_posted: datetime
+    user_id: UUID
+    count: Count
     author: UserResponse
