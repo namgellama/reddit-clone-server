@@ -12,8 +12,7 @@ from app.schemas.comment import (
     CommentBase,
     CommentUpdate,
 )
-from app.schemas.user import UserResponse
-from app.services.user import get_current_user
+from app.utils.security import CurrentUser
 
 router = APIRouter()
 
@@ -68,7 +67,7 @@ async def get_comment(
 async def create_comment(
     post_id: UUID,
     body: CommentBase,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = CommentCreate(
@@ -94,7 +93,7 @@ async def update_comment(
     post_id: UUID,
     comment_id: UUID,
     body: CommentBase,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = CommentUpdate(
@@ -119,7 +118,7 @@ async def update_comment(
 async def delete_comment(
     post_id: UUID,
     comment_id: UUID,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await comment_service.delete(

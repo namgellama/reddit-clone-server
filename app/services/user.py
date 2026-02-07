@@ -2,12 +2,11 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from jwt.exceptions import InvalidTokenError
 
 from app.schemas.user import UserCreate
 from app.config.database import get_db
 from app.models.user import User
-from app.utils.security import hash_password, decode_token, oauth2_scheme
+from app.utils.security import hash_password
 
 
 # Get user by id
@@ -42,33 +41,6 @@ async def get_by_google_sub(
     result = await db.execute(select(User).where(User.google_sub == google_sub))
     user = result.scalars().first()
 
-    return user
-
-
-# Get current user
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        id = decode_token(token, "access")
-
-        if id is None:
-            raise credentials_exception
-
-    except InvalidTokenError:
-        raise credentials_exception
-
-    user = await get_by_id(id=id, db=db)
-
-    if user is None:
-        raise credentials_exception
     return user
 
 
