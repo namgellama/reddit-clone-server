@@ -8,8 +8,9 @@ from app.schemas.post import (
     PostResponse,
     PostCreate,
     PostBase,
-    PostDetailsResponse,
+    PostResponse,
     PostUpdate,
+    PostResponseWithCount,
 )
 from app.schemas.user import UserResponse
 from app.services import post as post_service
@@ -27,7 +28,7 @@ router = APIRouter()
 """
 
 
-@router.get("/", response_model=APIResponse[list[PostResponse]])
+@router.get("/", response_model=APIResponse[list[PostResponseWithCount]])
 async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
     posts = await post_service.get_all(db)
 
@@ -42,14 +43,14 @@ async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.get("/{id}", response_model=APIResponse[PostDetailsResponse])
+@router.get("/{id}", response_model=APIResponse[PostResponseWithCount])
 async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
     post = await post_service.get_by_id(id=id, db=db)
 
     return APIResponse(
         success=True,
         message="Post fetched successfully",
-        data=PostDetailsResponse.model_validate(post),
+        data=PostResponseWithCount.model_validate(post),
     )
 
 
