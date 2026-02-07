@@ -3,11 +3,10 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.database import get_db
-from app.services.user import get_current_user
 from app.schemas.response import APIResponse
-from app.schemas.user import UserResponse
 from app.schemas.downvote import DownvoteResponse, DownvoteBase, DownvoteCreate
 from app.services import downvote as downvote_service
+from app.utils.security import CurrentUser
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ router = APIRouter()
 async def toggle_downvote(
     body: DownvoteBase,
     response: Response,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = DownvoteCreate(**body.model_dump(), user_id=current_user.id)

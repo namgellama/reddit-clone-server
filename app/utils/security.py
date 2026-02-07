@@ -1,11 +1,18 @@
-from typing import Literal
+from typing import Literal, Annotated
 from datetime import datetime, timedelta, timezone
 import jwt
+from jwt import InvalidTokenError
 from pwdlib import PasswordHash
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from app.config import env
+from app.schemas.user import UserResponse
+from app.config.database import get_db
+from app.models.user import User
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
@@ -50,3 +57,33 @@ def decode_token(token: str, type: Literal["access", "refresh"]):
         return None
     else:
         return payload.get("sub")
+
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        id = decode_token(token, "access")
+
+        if id is None:
+            raise credentials_exception
+
+    except InvalidTokenError:
+        raise credentials_exception
+
+    result = await db.execute(select(User).where(User.id == id))
+    user = result.scalars().first()
+
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+CurrentUser = Annotated[UserResponse, Depends(get_current_user)]

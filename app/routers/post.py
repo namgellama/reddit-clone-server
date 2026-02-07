@@ -12,10 +12,9 @@ from app.schemas.post import (
     PostUpdate,
     PostResponseWithCount,
 )
-from app.schemas.user import UserResponse
 from app.services import post as post_service
-from app.services.user import get_current_user
 from app.schemas.response import APIResponse
+from app.utils.security import CurrentUser
 
 
 router = APIRouter()
@@ -67,7 +66,7 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 )
 async def create_post(
     body: PostBase,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = PostCreate(**body.model_dump(), user_id=current_user.id)
@@ -88,7 +87,7 @@ async def create_post(
 async def update_post(
     id: UUID,
     body: PostBase,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     payload = PostUpdate(**body.model_dump(), user_id=current_user.id, id=id)
@@ -110,7 +109,7 @@ async def update_post(
 @router.delete("/{id}", response_model=APIResponse[None])
 async def delete_post(
     id: UUID,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await post_service.delete(id=id, user_id=current_user.id, db=db)
