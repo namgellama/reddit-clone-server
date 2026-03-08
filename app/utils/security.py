@@ -40,19 +40,20 @@ def create_token(data: dict, type: Literal["access", "refresh"]):
 
     to_encode.update({"exp": expire})
 
-    encoded_jwt = jwt.encode(to_encode, secret_key, algorithm="HS256")
+    encoded_jwt = jwt.encode(
+        to_encode, secret_key.get_secret_value(), algorithm="HS256"
+    )
     return encoded_jwt
 
 
 def decode_token(token: str, type: Literal["access", "refresh"]):
     if type == "access":
         secret_key = settings.jwt_access_secret
-        print("secret_key from decode_token", secret_key)
     else:
-        secret_key = settings.jwt_access_secret
+        secret_key = settings.jwt_refresh_secret
 
     try:
-        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+        payload = jwt.decode(token, secret_key.get_secret_value(), algorithms=["HS256"])
     except jwt.InvalidTokenError:
         return None
     else:

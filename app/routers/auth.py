@@ -151,12 +151,8 @@ def logout(response: Response):
 
 
 @router.post("/refresh-token", response_model=APIResponse[LoginResponse])
-async def refresh_token(
-    request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]
-):
-    access_token = await auth_service.refresh_token(
-        request=request, response=response, db=db
-    )
+async def refresh_token(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
+    access_token = await auth_service.refresh_token(request=request, db=db)
 
     return APIResponse(
         success=True, message="Token refreshed successfully", data=access_token
