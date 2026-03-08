@@ -1,28 +1,36 @@
-import os
 from dotenv import load_dotenv
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
-# Environment
-ENV = os.getenv("ENV")
-FRONTEND_URL = os.getenv("FRONTEND_URL")
-SECRET_KEY = os.getenv("SECRET_KEY")
 
-# Database
-DATABASE_URL = os.getenv("DATABASE_URL")
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-# JWT
-JWT_ACCESS_SECRET = os.getenv("JWT_ACCESS_SECRET")
-JWT_REFRESH_SECRET = os.getenv("JWT_REFRESH_SECRET")
+    # Environment
+    env: str
+    frontend_url: str
+    secret_key: SecretStr
 
-# Redis
-REDIS_URL = os.getenv("REDIS_URL")
+    # Database
+    database_url: str
 
-# Mail
-MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+    # Jwt
+    jwt_access_secret: SecretStr
+    jwt_refresh_secret: SecretStr
 
-# GOOGLE Oauth
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+    # Redis
+    redis_url: str
+
+    # Mail
+    mail_username: str
+    mail_password: SecretStr
+
+    # Google Oauth
+    google_client_id: str
+    google_client_secret: SecretStr
+    google_redirect_uri: str
+
+
+settings = Settings()

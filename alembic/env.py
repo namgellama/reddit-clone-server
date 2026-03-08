@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.database.db import Base
-from app.config import env
+from app.config.env import settings
 
 import app.database.models  # noqa: F401
 
@@ -30,7 +30,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-SYNC_DATABASE_URL = env.DATABASE_URL.replace("postgresql+asyncpg", "postgresql")
+SYNC_DATABASE_URL = settings.database_url.replace("postgresql+asyncpg", "postgresql")
 config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
 
 

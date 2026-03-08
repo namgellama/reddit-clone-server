@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from app.config import env
+from app.config.env import settings
 from app.schemas.user import UserResponse
 from app.database.db import get_db
 from app.models.user import User
@@ -33,10 +33,10 @@ def create_token(data: dict, type: Literal["access", "refresh"]):
 
     if type == "access":
         expire = datetime.now(timezone.utc) + timedelta(minutes=30)
-        secret_key = env.JWT_ACCESS_SECRET
+        secret_key = settings.jwt_access_secret
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=7)
-        secret_key = env.JWT_REFRESH_SECRET
+        secret_key = settings.jwt_refresh_secret
 
     to_encode.update({"exp": expire})
 
@@ -46,9 +46,10 @@ def create_token(data: dict, type: Literal["access", "refresh"]):
 
 def decode_token(token: str, type: Literal["access", "refresh"]):
     if type == "access":
-        secret_key = env.JWT_ACCESS_SECRET
+        secret_key = settings.jwt_access_secret
+        print("secret_key from decode_token", secret_key)
     else:
-        secret_key = env.JWT_REFRESH_SECRET
+        secret_key = settings.jwt_access_secret
 
     try:
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])

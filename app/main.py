@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.database.db import engine
-from app.config import env
+from app.config.env import settings
 from app.config.redis import redis_client
 from app.routers import auth
 from app.routers import user
@@ -46,7 +46,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key=env.SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
 
 
 @app.get("/")

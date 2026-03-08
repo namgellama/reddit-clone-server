@@ -1,12 +1,12 @@
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 
-from app.config import env
+from app.config.env import settings
 
 
 config_data = {
-    "GOOGLE_CLIENT_ID": env.GOOGLE_CLIENT_ID,
-    "GOOGLE_CLIENT_SECRET": env.GOOGLE_CLIENT_SECRET,
+    "GOOGLE_CLIENT_ID": settings.google_client_id,
+    "GOOGLE_CLIENT_SECRET": settings.google_client_secret,
 }
 
 oauth = OAuth(Config(environ=config_data))
