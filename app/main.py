@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.config.database import engine
+from app.database.db import engine
 from app.config import env
 from app.config.redis import redis_client
 from app.routers import auth

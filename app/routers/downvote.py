@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_db
+from app.database.db import get_db
 from app.schemas.response import APIResponse
 from app.schemas.downvote import DownvoteResponse, DownvoteBase, DownvoteCreate
 from app.services import downvote as downvote_service

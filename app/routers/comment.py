@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
-from app.config.database import get_db
+from app.database.db import get_db
 from app.services import comment as comment_service
 from app.schemas.response import APIResponse
 from app.schemas.comment import (

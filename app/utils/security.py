@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import env
 from app.schemas.user import UserResponse
-from app.config.database import get_db
+from app.database.db import get_db
 from app.models.user import User
 
 
