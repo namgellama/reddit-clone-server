@@ -1,11 +1,5 @@
-from typing import Generic, Optional, TypeVar
-from pydantic.generics import GenericModel
+from pydantic import BaseModel
 
 
-T = TypeVar("T")
-
-
-class APIResponse(GenericModel, Generic[T]):
-    data: Optional[T]
-    success: bool = True
-    message: Optional[str] = None
+class SimpleApiResponse(BaseModel):
+    message: str
