@@ -8,6 +8,7 @@ from .user import UserResponse
 class PostBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     content: str = Field(min_length=1)
+    images: list[str] = Field(min_length=1)
 
 
 class PostCreate(PostBase):
