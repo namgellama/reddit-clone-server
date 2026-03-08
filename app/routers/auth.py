@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.auth import LoginResponse, RegisterEmail, VerifyEmail, Token
 from app.schemas.response import APIResponse
 from app.schemas.user import UserResponse, UserCreate
-from app.config.database import get_db
+from app.database.db import get_db
 from app.services import auth as auth_service
 from app.config.oauth import oauth
 from app.config import env
@@ -44,9 +44,7 @@ async def register_email(
 
 
 @router.post("/verify-email", response_model=APIResponse[None])
-async def register_email(
-    body: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]
-):
+async def verify_email(body: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]):
     match = await auth_service.verify_email(payload=body, db=db)
 
     if not match:

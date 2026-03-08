@@ -11,12 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import env
 from app.schemas.user import UserResponse
-from app.config.database import get_db
+from app.database.db import get_db
 from app.models.user import User
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
-
 
 password_hash = PasswordHash.recommended()
 

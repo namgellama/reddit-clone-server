@@ -5,13 +5,10 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.config.database import Base
+from app.database.db import Base
 from app.config import env
-from app.models.user import User
-from app.models.post import Post
-from app.models.comment import Comment
-from app.models.upvote import Upvote
-from app.models.downvote import Downvote
+
+import app.database.models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

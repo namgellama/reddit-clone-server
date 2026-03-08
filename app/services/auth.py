@@ -3,11 +3,9 @@ from fastapi import Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_db
-from app.models.user import User
+from app.database.db import get_db
 from app.utils.security import verify_password, create_token, decode_token
 from app.utils.cookie import set_cookie, delete_cookie
 from app.schemas.auth import RegisterEmail, VerifyEmail, GoogleUser

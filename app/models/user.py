@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.config.database import Base
+from app.database.db import Base
 
 
 class User(Base):
@@ -19,15 +19,15 @@ class User(Base):
         String, unique=True, nullable=True, default=None
     )
 
-    posts: Mapped[list["Post"]] = relationship(
+    posts: Mapped[list["Post"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="author", cascade="all, delete-orphan"
     )
-    comments: Mapped[list["Comment"]] = relationship(
+    comments: Mapped[list["Comment"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="user", cascade="all, delete-orphan"
     )
-    upvotes: Mapped[list["Upvote"]] = relationship(
+    upvotes: Mapped[list["Upvote"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="user", cascade="all, delete-orphan"
     )
-    downvotes: Mapped[list["Downvote"]] = relationship(
+    downvotes: Mapped[list["Downvote"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="user", cascade="all, delete-orphan"
     )

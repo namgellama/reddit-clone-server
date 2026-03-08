@@ -3,12 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_db
+from app.database.db import get_db
 from app.schemas.post import (
     PostResponse,
     PostCreate,
     PostBase,
-    PostResponse,
     PostUpdate,
     PostResponseWithCount,
 )

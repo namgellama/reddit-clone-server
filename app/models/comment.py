@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.config.database import Base
+from app.database.db import Base
 
 from .post import Post
 from .user import User
@@ -35,10 +35,10 @@ class Comment(Base):
 
     user: Mapped[User] = relationship(back_populates="comments")
     post: Mapped[Post] = relationship(back_populates="comments")
-    upvotes: Mapped[list["Upvote"]] = relationship(
+    upvotes: Mapped[list["Upvote"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="comment", cascade="all, delete-orphan"
     )
-    downvotes: Mapped[list["Downvote"]] = relationship(
+    downvotes: Mapped[list["Downvote"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="comment", cascade="all, delete-orphan"
     )
 
