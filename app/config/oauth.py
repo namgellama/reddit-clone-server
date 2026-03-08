@@ -6,7 +6,7 @@ from app.config.env import settings
 
 config_data = {
     "GOOGLE_CLIENT_ID": settings.google_client_id,
-    "GOOGLE_CLIENT_SECRET": settings.google_client_secret,
+    "GOOGLE_CLIENT_SECRET": settings.google_client_secret.get_secret_value(),
 }
 
 oauth = OAuth(Config(environ=config_data))
