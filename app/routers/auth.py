@@ -10,7 +10,7 @@ from app.schemas.user import UserResponse, UserCreate
 from app.database.db import get_db
 from app.services import auth as auth_service
 from app.config.oauth import oauth
-from app.config import env
+from app.config.env import settings
 
 
 router = APIRouter()
@@ -103,7 +103,7 @@ async def login(
 
 @router.get("/google")
 async def login_google(request: Request):
-    return await oauth.google.authorize_redirect(request, env.GOOGLE_REDIRECT_URI)
+    return await oauth.google.authorize_redirect(request, settings.google_redirect_uri)
 
 
 """
@@ -121,7 +121,7 @@ async def auth_google(
     data = await auth_service.google_callback(request=request, db=db, response=response)
 
     return RedirectResponse(
-        url=f"{env.FRONTEND_URL}/auth?access_token={data['access_token']}"
+        url=f"{settings.frontend_urlr}/auth?access_token={data['access_token']}"
     )
 
 

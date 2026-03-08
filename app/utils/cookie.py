@@ -1,6 +1,6 @@
 from fastapi import Response
 
-from app.config import env
+from app.config.env import settings
 
 
 def set_cookie(response: Response, key: str, value: str, max_age: int):
@@ -8,7 +8,7 @@ def set_cookie(response: Response, key: str, value: str, max_age: int):
         key=key,
         value=value,
         httponly=True,
-        secure=env.ENV == "production",
+        secure=settings.env == "production",
         samesite="lax",
         max_age=max_age,
     )
@@ -16,5 +16,5 @@ def set_cookie(response: Response, key: str, value: str, max_age: int):
 
 def delete_cookie(response: Response, key: str):
     response.delete_cookie(
-        key=key, httponly=True, secure=env.ENV == "production", samesite="lax"
+        key=key, httponly=True, secure=settings.env == "production", samesite="lax"
     )
