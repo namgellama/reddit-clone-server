@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.auth import LoginResponse, RegisterEmail, VerifyEmail, Token
-from app.schemas.response import APIResponse
+from app.schemas.response import SimpleApiResponse
 from app.schemas.user import UserResponse, UserCreate
 from app.database.db import get_db
 from app.services import auth as auth_service
@@ -24,15 +24,13 @@ router = APIRouter()
 """
 
 
-@router.post("/register-email", response_model=APIResponse[None])
+@router.post("/register-email", response_model=SimpleApiResponse)
 async def register_email(
     body: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]
 ):
     await auth_service.register_email(payload=body, db=db)
 
-    return APIResponse(
-        success=True, message="Otp has been sent to your email.", data=None
-    )
+    return {"message": "Otp has been sent to your email."}
 
 
 """
@@ -43,16 +41,14 @@ async def register_email(
 """
 
 
-@router.post("/verify-email", response_model=APIResponse[None])
+@router.post("/verify-email", response_model=SimpleApiResponse)
 async def verify_email(body: VerifyEmail, db: Annotated[AsyncSession, Depends(get_db)]):
     match = await auth_service.verify_email(payload=body, db=db)
 
     if not match:
         raise HTTPException(status_code=400, detail="OTP does not match")
 
-    return APIResponse(
-        success=True, message="Your email is verified successfully", data=None
-    )
+    return {"message": "Your email is verified successfully"}
 
 
 """
@@ -63,13 +59,9 @@ async def verify_email(body: VerifyEmail, db: Annotated[AsyncSession, Depends(ge
 """
 
 
-@router.post("/register", response_model=APIResponse[UserResponse], status_code=201)
+@router.post("/register", response_model=UserResponse, status_code=201)
 async def register_user(body: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    new_user = await auth_service.register_user(payload=body, db=db)
-
-    return APIResponse(
-        success=True, message="User registered successfully", data=new_user
-    )
+    return await auth_service.register_user(payload=body, db=db)
 
 
 """
@@ -133,13 +125,11 @@ async def auth_google(
 """
 
 
-@router.post("/logout", response_model=APIResponse[None])
+@router.post("/logout", response_model=SimpleApiResponse)
 def logout(response: Response):
     auth_service.logout(response=response)
 
-    return APIResponse(
-        success=True, message="You have been logged out successfully", data=None
-    )
+    return {"message": "You have been logged out successfully"}
 
 
 """
@@ -150,10 +140,6 @@ def logout(response: Response):
 """
 
 
-@router.post("/refresh-token", response_model=APIResponse[LoginResponse])
+@router.post("/refresh-token", response_model=LoginResponse)
 async def refresh_token(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
-    access_token = await auth_service.refresh_token(request=request, db=db)
-
-    return APIResponse(
-        success=True, message="Token refreshed successfully", data=access_token
-    )
+    return await auth_service.refresh_token(request=request, db=db)

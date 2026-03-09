@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
-from app.schemas.response import APIResponse
 from app.schemas.upvote import UpvoteResponse, UpvoteBase, UpvoteCreate
 from app.services import upvote as upvote_service
 from app.utils.security import CurrentUser
@@ -18,7 +17,7 @@ router = APIRouter()
 """
 
 
-@router.post("/", response_model=APIResponse[UpvoteResponse])
+@router.post("/", response_model=UpvoteResponse)
 async def toggle_upvote(
     body: UpvoteBase,
     response: Response,
@@ -36,16 +35,8 @@ async def toggle_upvote(
     if upvote:
         response.status_code = status.HTTP_201_CREATED
 
-        return APIResponse(
-            success=True,
-            message=message,
-            data=UpvoteResponse(upvoted=True),
-        )
+        return {"upvoted": True, "message": message}
 
     response.status_code = status.HTTP_200_OK
 
-    return APIResponse(
-        success=True,
-        message=message,
-        data=UpvoteResponse(upvoted=False),
-    )
+    return {"upvoted": False, "message": message}

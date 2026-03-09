@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
-from app.schemas.response import APIResponse
 from app.schemas.downvote import DownvoteResponse, DownvoteBase, DownvoteCreate
 from app.services import downvote as downvote_service
 from app.utils.security import CurrentUser
@@ -18,7 +17,7 @@ router = APIRouter()
 """
 
 
-@router.post("/", response_model=APIResponse[DownvoteResponse])
+@router.post("/", response_model=DownvoteResponse)
 async def toggle_downvote(
     body: DownvoteBase,
     response: Response,
@@ -36,12 +35,8 @@ async def toggle_downvote(
     if downvote:
         response.status_code = status.HTTP_201_CREATED
 
-        return APIResponse(
-            success=True, message=message, data=DownvoteResponse(downvoted=True)
-        )
+        return {"downvoted": True, "message": message}
 
     response.status_code = status.HTTP_200_OK
 
-    return APIResponse(
-        success=True, message=message, data=DownvoteResponse(downvoted=False)
-    )
+    return {"downvoted": False, "message": message}
