@@ -112,7 +112,7 @@ async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_
     data = await auth_service.google_callback(request=request, db=db)
 
     redirect_response = RedirectResponse(
-        url=f"{settings.frontend_url}/auth?access_token={data['access_token']}"
+        url=f"{settings.frontend_url}/google/callback?access_token={data['access_token']}"
     )
 
     set_cookie(
