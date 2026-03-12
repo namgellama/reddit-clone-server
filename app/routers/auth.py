@@ -11,6 +11,7 @@ from app.database.db import get_db
 from app.services import auth as auth_service
 from app.config.oauth import oauth
 from app.config.env import settings
+from app.utils.cookie import set_cookie
 
 
 router = APIRouter()
@@ -107,14 +108,21 @@ async def login_google(request: Request):
 
 
 @router.get("/google/callback")
-async def auth_google(
-    request: Request, db: Annotated[AsyncSession, Depends(get_db)], response: Response
-):
-    data = await auth_service.google_callback(request=request, db=db, response=response)
+async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
+    data = await auth_service.google_callback(request=request, db=db)
 
-    return RedirectResponse(
-        url=f"{settings.frontend_urlr}/auth?access_token={data['access_token']}"
+    redirect_response = RedirectResponse(
+        url=f"{settings.frontend_url}/auth?access_token={data['access_token']}"
     )
+
+    set_cookie(
+        response=redirect_response,
+        key="refresh_token",
+        value=data["refresh_token"],
+        max_age=60 * 60 * 24 * 7,
+    )
+
+    return redirect_response
 
 
 """

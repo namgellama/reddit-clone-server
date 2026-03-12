@@ -95,9 +95,7 @@ async def login(
 
 
 # Google callback
-async def google_callback(
-    request, db: Annotated[AsyncSession, Depends(get_db)], response: Response
-):
+async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)]):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
     except OAuthError:
@@ -109,7 +107,7 @@ async def google_callback(
 
     google_user = GoogleUser(**user_info)
 
-    existing_user = await user_service.get_by_google_sub(str(google_user.sub), db)
+    existing_user = await user_service.get_by_email(str(google_user.email), db)
 
     if existing_user:
         db_user = existing_user
@@ -126,14 +124,7 @@ async def google_callback(
     access_token = create_token(data={"sub": str(db_user.id)}, type="access")
     refresh_token = create_token(data={"sub": str(db_user.id)}, type="refresh")
 
-    set_cookie(
-        response=response,
-        key="refresh_token",
-        value=refresh_token,
-        max_age=60 * 60 * 24 * 7,
-    )
-
-    return {"access_token": access_token}
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 # Logout
