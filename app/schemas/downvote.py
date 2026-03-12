@@ -22,10 +22,12 @@ class DownvoteCreate(DownvoteBase):
         return self
 
 
-class DownvoteCreateResponse(DownvoteBase):
+class DownvoteCreateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    post_id: UUID | None
+    comment_id: UUID | None
     created_at: datetime
 
 
