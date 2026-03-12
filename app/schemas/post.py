@@ -25,20 +25,19 @@ class Count(BaseModel):
     downvote: int
 
 
-class PostResponse(PostBase):
+class PostResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    title: str
+    content: str
+    images: list[str]
     date_posted: datetime
     user_id: UUID
     author: UserResponse
 
 
-class PostResponseWithCount(PostBase):
+class PostResponseWithCount(PostResponse):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
-    date_posted: datetime
-    user_id: UUID
     count: Count
-    author: UserResponse

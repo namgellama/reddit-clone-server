@@ -22,10 +22,12 @@ class UpvoteCreate(UpvoteBase):
         return self
 
 
-class UpvoteCreateResponse(UpvoteBase):
+class UpvoteCreateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    post_id: UUID | None
+    comment_id: UUID | None
     created_at: datetime
 
 

@@ -28,7 +28,9 @@ class UserCreate(UserBase):
         return v
 
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    username: str
+    email: EmailStr
