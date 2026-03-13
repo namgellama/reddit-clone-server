@@ -32,5 +32,9 @@ class Settings(BaseSettings):
     google_client_secret: SecretStr
     google_redirect_uri: str
 
+    # Image file
+    max_upload_size_bytes: int = 5 * 1024 * 1024  # 5 MB
+    max_upload_length: int = 3
+
 
 settings = Settings()
