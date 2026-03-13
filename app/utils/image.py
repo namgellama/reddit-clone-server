@@ -4,7 +4,8 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
-MEDIA_DIR = Path("media")
+MEDIA_PATH = "media/posts"
+MEDIA_DIR = Path(MEDIA_PATH)
 
 
 def process_image(content: bytes) -> str:
@@ -23,4 +24,4 @@ def process_image(content: bytes) -> str:
 
         img.save(filepath, "JPEG", quality=85, optimize=True)
 
-    return filename
+    return f"/{MEDIA_PATH}/{filename}"
