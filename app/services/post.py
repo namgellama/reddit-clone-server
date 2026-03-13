@@ -81,7 +81,10 @@ async def get_by_id(id: UUID, db: AsyncSession):
 # Create
 async def create(payload: PostCreate, db: AsyncSession):
     new_post = Post(
-        title=payload.title, content=payload.content, user_id=payload.user_id
+        title=payload.title,
+        content=payload.content,
+        images=payload.images,
+        user_id=payload.user_id,
     )
 
     db.add(new_post)

@@ -1,6 +1,6 @@
 from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
@@ -12,6 +12,7 @@ from app.schemas.post import (
     PostResponseWithCount,
 )
 from app.services import post as post_service
+from app.services.image import ImageService
 from app.utils.security import CurrentUser
 
 
@@ -53,11 +54,17 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 
 @router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(
-    body: PostBase,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
+    title: str = Form(...),
+    content: str = Form(...),
+    files: list[UploadFile] = File(default=[]),
 ):
-    payload = PostCreate(**body.model_dump(), user_id=current_user.id)
+    image_list = await ImageService.validate_and_process(files) if files else []
+
+    payload = PostCreate(
+        title=title, content=content, images=image_list, user_id=current_user.id
+    )
 
     return await post_service.create(payload=payload, db=db)
 
