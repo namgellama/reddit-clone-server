@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +7,6 @@ from app.database.db import get_db
 from app.schemas.post import (
     PostResponse,
     PostCreate,
-    PostBase,
     PostUpdate,
     PostResponseWithCount,
 )
@@ -71,20 +70,32 @@ async def create_post(
 
 """
     @desc Update a post
-    @route PUT /api/v1/posts
+    @route PATCH /api/v1/posts
     @access Private
 
 """
 
 
-@router.put("/{id}", response_model=PostResponse)
+@router.patch("/{id}", response_model=PostResponse)
 async def update_post(
     id: UUID,
-    body: PostBase,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
+    title: Optional[str] = Form(None),
+    content: Optional[str] = Form(None),
+    previous_images: list[str] | None = Form(default=None),
+    files: list[UploadFile] | None = File(default=None),
 ):
-    payload = PostUpdate(**body.model_dump(), user_id=current_user.id, id=id)
+    image_list = await ImageService.validate_and_process(files) if files else []
+
+    payload = PostUpdate(
+        title=title,
+        content=content,
+        images=image_list,
+        previous_images=previous_images,
+        user_id=current_user.id,
+        id=id,
+    )
 
     return await post_service.update(payload=payload, db=db)
 
