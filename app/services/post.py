@@ -114,6 +114,8 @@ async def update(payload: PostUpdate, db: AsyncSession):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
 
     old_images = post.images or []
+    previous_images = payload.previous_images or []
+    new_images = payload.images or []
 
     if payload.title is not None:
         post.title = payload.title
@@ -122,14 +124,14 @@ async def update(payload: PostUpdate, db: AsyncSession):
         post.content = payload.content
 
     if payload.images is not None or payload.previous_images is not None:
-        post.images = (payload.previous_images or []) + (payload.images or [])
+        post.images = previous_images + new_images
 
     await db.commit()
     await db.refresh(post, attribute_names=["author"])
 
-    if payload.previous_images is not None:
+    if len(previous_images) > 0:
         for image in old_images:
-            if image not in payload.previous_images:
+            if image not in previous_images:
                 ImageService.delete_image(image)
     else:
         for image in old_images:
