@@ -1,6 +1,8 @@
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from contextlib import asynccontextmanager
 
 from app.database.db import engine
@@ -47,6 +49,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(SessionMiddleware, secret_key=settings.secret_key.get_secret_value())
+
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 
 @app.get("/")
