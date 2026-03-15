@@ -57,9 +57,9 @@ async def create_post(
     db: Annotated[AsyncSession, Depends(get_db)],
     title: str = Form(...),
     content: str = Form(...),
-    files: list[UploadFile] = File(default=[]),
+    images: list[UploadFile] = File(default=[]),
 ):
-    image_list = await ImageService.validate_and_process(files) if files else []
+    image_list = await ImageService.validate_and_process(images) if images else []
 
     payload = PostCreate(
         title=title, content=content, images=image_list, user_id=current_user.id
@@ -84,9 +84,9 @@ async def update_post(
     title: Optional[str] = Form(None),
     content: Optional[str] = Form(None),
     previous_images: list[str] | None = Form(default=None),
-    files: list[UploadFile] | None = File(default=None),
+    images: list[UploadFile] | None = File(default=None),
 ):
-    image_list = await ImageService.validate_and_process(files) if files else []
+    image_list = await ImageService.validate_and_process(images) if images else []
 
     payload = PostUpdate(
         title=title,
