@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 from sqlalchemy import (
     DateTime,
     ForeignKey,
-    CheckConstraint,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -21,12 +20,6 @@ class Upvote(Base):
     __tablename__ = "upvotes"
 
     __table_args__ = (
-        # Only one of post_id or comment_id must be NOT NULL
-        CheckConstraint(
-            "(post_id IS NOT NULL AND comment_id IS NULL) OR "
-            "(post_id IS NULL AND comment_id IS NOT NULL)",
-            name="check_only_one_target",
-        ),
         # Prevent duplicate upvotes on posts
         UniqueConstraint("user_id", "post_id", name="unique_user_post_upvote"),
         # Prevent duplicate upvotes on comments
