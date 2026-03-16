@@ -122,7 +122,7 @@ async def delete_post(
 
 
 """
-    @desc Create post upvote
+    @desc Toggle post upvote
     @route POST /api/v1/posts/:id/upvotes
     @access Private
 
@@ -149,8 +149,8 @@ async def toggle_post_upvote(
 
 
 """
-    @desc Toggle post upvote
-    @route POST /api/v1/posts/:id/upvotes
+    @desc Toggle post downvote
+    @route POST /api/v1/posts/:id/downvotes
     @access Private
 
 """

@@ -11,7 +11,9 @@ from app.schemas.comment import (
     CommentBase,
     CommentUpdate,
 )
+from app.schemas.downvote import DownvoteResponse
 from app.services import upvote as upvote_service
+from app.services import downvote as downvote_service
 from app.schemas.upvote import UpvoteResponse
 from app.utils.security import CurrentUser
 
@@ -114,7 +116,7 @@ async def delete_comment(
 
 
 """
-    @desc Create comment upvote
+    @desc Toggle comment upvote
     @route POST /api/v1/posts/:post_id/comments/:comment_id/upvotes
     @access Private
 
@@ -141,3 +143,33 @@ async def toggle_comment_upvote(
     response.status_code = status.HTTP_200_OK
 
     return {"upvoted": False, "message": "Comment upvote removed"}
+
+
+"""
+    @desc Toggle comment downvote
+    @route POST /api/v1/posts/:post_id/comments/:comment_id/downvotes
+    @access Private
+
+"""
+
+
+@router.post("/{comment_id}/downvotes", response_model=DownvoteResponse)
+async def toggle_comment_downvote(
+    post_id: UUID,
+    comment_id: UUID,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    downvote = await downvote_service.toggle_comment_downvote(
+        post_id, comment_id, current_user.id, db=db
+    )
+
+    if downvote:
+        response.status_code = status.HTTP_201_CREATED
+
+        return {"downvoted": True, "message": "Comment downvoted"}
+
+    response.status_code = status.HTTP_200_OK
+
+    return {"downvoted": False, "message": "Comment downvote removed"}

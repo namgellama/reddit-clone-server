@@ -87,7 +87,7 @@ async def toggle_comment_upvote(
     if not upvote:
         # Create new upvote
         new_upvote = Upvote(
-            post_id=post_id,
+            post_id=None,
             comment_id=comment_id,
             user_id=user_id,
         )
