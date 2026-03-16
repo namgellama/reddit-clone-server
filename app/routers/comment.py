@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
@@ -11,6 +11,10 @@ from app.schemas.comment import (
     CommentBase,
     CommentUpdate,
 )
+from app.schemas.downvote import DownvoteResponse
+from app.services import upvote as upvote_service
+from app.services import downvote as downvote_service
+from app.schemas.upvote import UpvoteResponse
 from app.utils.security import CurrentUser
 
 router = APIRouter()
@@ -109,3 +113,63 @@ async def delete_comment(
     await comment_service.delete(
         post_id=post_id, comment_id=comment_id, user_id=current_user.id, db=db
     )
+
+
+"""
+    @desc Toggle comment upvote
+    @route POST /api/v1/posts/:post_id/comments/:comment_id/upvotes
+    @access Private
+
+"""
+
+
+@router.post("/{comment_id}/upvotes", response_model=UpvoteResponse)
+async def toggle_comment_upvote(
+    post_id: UUID,
+    comment_id: UUID,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    upvote = await upvote_service.toggle_comment_upvote(
+        post_id, comment_id, current_user.id, db=db
+    )
+
+    if upvote:
+        response.status_code = status.HTTP_201_CREATED
+
+        return {"upvoted": True, "message": "Comment upvoted"}
+
+    response.status_code = status.HTTP_200_OK
+
+    return {"upvoted": False, "message": "Comment upvote removed"}
+
+
+"""
+    @desc Toggle comment downvote
+    @route POST /api/v1/posts/:post_id/comments/:comment_id/downvotes
+    @access Private
+
+"""
+
+
+@router.post("/{comment_id}/downvotes", response_model=DownvoteResponse)
+async def toggle_comment_downvote(
+    post_id: UUID,
+    comment_id: UUID,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    downvote = await downvote_service.toggle_comment_downvote(
+        post_id, comment_id, current_user.id, db=db
+    )
+
+    if downvote:
+        response.status_code = status.HTTP_201_CREATED
+
+        return {"downvoted": True, "message": "Comment downvoted"}
+
+    response.status_code = status.HTTP_200_OK
+
+    return {"downvoted": False, "message": "Comment downvote removed"}

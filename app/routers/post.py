@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, Response, Depends, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
@@ -10,7 +10,11 @@ from app.schemas.post import (
     PostUpdate,
     PostResponseWithCount,
 )
+from app.schemas.upvote import UpvoteResponse
+from app.schemas.downvote import DownvoteResponse
 from app.services import post as post_service
+from app.services import upvote as upvote_service
+from app.services import downvote as downvote_service
 from app.services.image import ImageService
 from app.utils.security import CurrentUser
 
@@ -115,3 +119,57 @@ async def delete_post(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await post_service.delete(id=id, user_id=current_user.id, db=db)
+
+
+"""
+    @desc Toggle post upvote
+    @route POST /api/v1/posts/:id/upvotes
+    @access Private
+
+"""
+
+
+@router.post("/{id}/upvotes", response_model=UpvoteResponse)
+async def toggle_post_upvote(
+    id: UUID,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    upvote = await upvote_service.toggle_post_upvote(id, current_user.id, db=db)
+
+    if upvote:
+        response.status_code = status.HTTP_201_CREATED
+
+        return {"upvoted": True, "message": "Post upvoted"}
+
+    response.status_code = status.HTTP_200_OK
+
+    return {"upvoted": False, "message": "Post upvote removed"}
+
+
+"""
+    @desc Toggle post downvote
+    @route POST /api/v1/posts/:id/downvotes
+    @access Private
+
+"""
+
+
+@router.post("/{id}/downvotes", response_model=DownvoteResponse)
+async def toggle_post_downvote(
+    id: UUID,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    upvote = await downvote_service.toggle_post_downvote(id, current_user.id, db=db)
+
+    if upvote:
+        response.status_code = status.HTTP_201_CREATED
+
+        return {"downvoted": True, "message": "Post downvoted"}
+
+    response.status_code = status.HTTP_200_OK
+
+    return {"downvoted": False, "message": "Post downvote removed"}

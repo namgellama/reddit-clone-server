@@ -46,7 +46,7 @@ async def get_by_id(id: UUID, db: AsyncSession):
 async def get_by_post_id_and_comment_id(
     post_id: UUID, comment_id: UUID, db: AsyncSession
 ):
-    await post_service.get_by_id(id=post_id)
+    await post_service.fetch_by_id(id=post_id, db=db)
 
     result = await db.execute(
         select(Comment).where((Comment.id == comment_id) & (Post.id == post_id))
