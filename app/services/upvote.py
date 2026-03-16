@@ -39,7 +39,7 @@ async def delete(upvote: Upvote, db: AsyncSession):
 # Toggle post upvote
 async def toggle_post_upvote(post_id: UUID, user_id: UUID, db: AsyncSession):
     # Check if post exists
-    await post_service.get_by_id(id=post_id, db=db)
+    await post_service.fetch_by_id(id=post_id, db=db)
 
     # Check if upvote by the current user exists
     upvote = await get_by_user_id_and_post_id(user_id=user_id, post_id=post_id, db=db)
@@ -59,6 +59,46 @@ async def toggle_post_upvote(post_id: UUID, user_id: UUID, db: AsyncSession):
         # Check if there is downvote in that post done by the current user
         downvote = await downvote_service.get_by_user_id_and_post_id(
             user_id=user_id, post_id=post_id, db=db
+        )
+
+        if downvote:
+            # Delete downvote if exists
+            await downvote_service.delete(downvote=downvote, db=db)
+
+        return new_upvote
+    else:
+        # Delete upvote if already exists to have toggle effect
+        await delete(upvote=upvote, db=db)
+        return None
+
+
+# Toggle comment upvote
+async def toggle_comment_upvote(
+    post_id: UUID, comment_id: UUID, user_id: UUID, db: AsyncSession
+):
+    # Check if comment exists
+    await comment_service.get_by_post_id_and_comment_id(post_id, comment_id, db)
+
+    # Check if upvote by the current user exists
+    upvote = await get_by_user_id_and_comment_id(
+        user_id=user_id, comment_id=comment_id, db=db
+    )
+
+    if not upvote:
+        # Create new upvote
+        new_upvote = Upvote(
+            post_id=post_id,
+            comment_id=comment_id,
+            user_id=user_id,
+        )
+
+        db.add(new_upvote)
+        await db.commit()
+        await db.refresh(new_upvote)
+
+        # Check if there is downvote in that post done by the current user
+        downvote = await downvote_service.get_by_user_id_and_comment_id(
+            user_id=user_id, comment_id=comment_id, db=db
         )
 
         if downvote:
