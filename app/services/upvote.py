@@ -2,7 +2,6 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.upvote import UpvoteCreate, UpvoteCreateResponse
 from app.models.upvote import Upvote
 from app.services import post as post_service
 from app.services import comment as comment_service
@@ -31,67 +30,43 @@ async def get_by_user_id_and_comment_id(
     return result.scalars().first()
 
 
-# Create
-async def create(payload: UpvoteCreate, db: AsyncSession):
-    new_upvote = Upvote(
-        post_id=payload.post_id,
-        comment_id=payload.comment_id,
-        user_id=payload.user_id,
-    )
-
-    db.add(new_upvote)
-    await db.commit()
-    await db.refresh(new_upvote)
-    return new_upvote
-
-
 # Delete
 async def delete(upvote: Upvote, db: AsyncSession):
     await db.delete(upvote)
     await db.commit()
 
 
-# Toggle
-async def toggle(
-    payload: UpvoteCreate, db: AsyncSession
-) -> UpvoteCreateResponse | None:
-    if payload.post_id:
-        await post_service.get_by_id(id=payload.post_id, db=db)
+# Toggle post upvote
+async def toggle_post_upvote(post_id: UUID, user_id: UUID, db: AsyncSession):
+    # Check if post exists
+    await post_service.get_by_id(id=post_id, db=db)
 
-        upvote = await get_by_user_id_and_post_id(
-            user_id=payload.user_id, post_id=payload.post_id, db=db
+    # Check if upvote by the current user exists
+    upvote = await get_by_user_id_and_post_id(user_id=user_id, post_id=post_id, db=db)
+
+    if not upvote:
+        # Create new upvote
+        new_upvote = Upvote(
+            post_id=post_id,
+            comment_id=None,
+            user_id=user_id,
         )
 
-        if not upvote:
-            new_upvote = await create(payload=payload, db=db)
-            downvote = await downvote_service.get_by_user_id_and_post_id(
-                user_id=payload.user_id, post_id=payload.post_id, db=db
-            )
+        db.add(new_upvote)
+        await db.commit()
+        await db.refresh(new_upvote)
 
-            if downvote:
-                await downvote_service.delete(downvote=downvote, db=db)
+        # Check if there is downvote in that post done by the current user
+        downvote = await downvote_service.get_by_user_id_and_post_id(
+            user_id=user_id, post_id=post_id, db=db
+        )
 
-            return new_upvote
-        else:
-            await delete(upvote=upvote, db=db)
-            return None
+        if downvote:
+            # Delete downvote if exists
+            await downvote_service.delete(downvote=downvote, db=db)
+
+        return new_upvote
     else:
-        await comment_service.get_by_id(id=payload.comment_id, db=db)
-
-        upvote = await get_by_user_id_and_comment_id(
-            user_id=payload.user_id, comment_id=payload.comment_id, db=db
-        )
-
-        if not upvote:
-            new_upvote = await create(payload=payload, db=db)
-            downvote = await downvote_service.get_by_user_id_and_comment_id(
-                user_id=payload.user_id, comment_id=payload.comment_id, db=db
-            )
-
-            if downvote:
-                await downvote_service.delete(downvote=downvote, db=db)
-
-            return new_upvote
-        else:
-            await delete(upvote=upvote, db=db)
-            return None
+        # Delete upvote if already exists to have toggle effect
+        await delete(upvote=upvote, db=db)
+        return None
