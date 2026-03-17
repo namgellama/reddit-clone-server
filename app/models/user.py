@@ -20,7 +20,7 @@ class User(Base):
     )
 
     posts: Mapped[list["Post"]] = relationship(  # noqa: F821 # type: ignore
-        back_populates="author", cascade="all, delete-orphan"
+        back_populates="user", cascade="all, delete-orphan"
     )
     comments: Mapped[list["Comment"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="user", cascade="all, delete-orphan"
