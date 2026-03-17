@@ -1,4 +1,3 @@
-from typing import Literal
 from uuid import UUID
 from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,6 +59,37 @@ async def delete(vote: Vote, db: AsyncSession):
     await db.commit()
 
 
+# Score calculation
+async def calculate_score(
+    post_id: UUID | None, comment_id: UUID | None, db: AsyncSession
+):
+    if (post_id is None and comment_id is None) or (post_id and comment_id):
+        raise ValueError("Exactly one of post_id or comment_id must be provided")
+
+    stmt = select(
+        func.coalesce(
+            func.sum(
+                case(
+                    (Vote.type == VoteType.UPVOTE, 1),
+                    (Vote.type == VoteType.DOWNVOTE, -1),
+                    else_=0,
+                )
+            ),
+            0,
+        )
+    )
+
+    if post_id is not None:
+        stmt = stmt.where(Vote.post_id == post_id)
+    else:
+        stmt = stmt.where(Vote.comment_id == comment_id)
+
+    result = await db.execute(stmt)
+    score = result.scalar()
+
+    return score or 0
+
+
 # Toggle post vote
 async def toggle_post_vote(
     post_id: UUID, body: VoteRequest, user_id: UUID, db: AsyncSession
@@ -97,21 +127,7 @@ async def toggle_post_vote(
         vote_type = new_vote.type
 
     # Score calculation
-    stmt = select(
-        func.coalesce(
-            func.sum(
-                case(
-                    (Vote.type == VoteType.UPVOTE, 1),
-                    (Vote.type == VoteType.DOWNVOTE, -1),
-                    else_=0,
-                )
-            ),
-            0,
-        )
-    ).where(Vote.post_id == post_id)
-
-    result = await db.execute(stmt)
-    score = result.scalar()
+    score = await calculate_score(post_id=post_id, comment_id=None, db=db)
 
     return VoteResponse(
         vote_type=vote_type,
@@ -160,21 +176,7 @@ async def toggle_comment_vote(
         vote_type = new_vote.type
 
     # Score calculation
-    stmt = select(
-        func.coalesce(
-            func.sum(
-                case(
-                    (Vote.type == VoteType.UPVOTE, 1),
-                    (Vote.type == VoteType.DOWNVOTE, -1),
-                    else_=0,
-                )
-            ),
-            0,
-        )
-    ).where(Vote.comment_id == comment_id)
-
-    result = await db.execute(stmt)
-    score = result.scalar()
+    score = await calculate_score(post_id=None, comment_id=comment_id, db=db)
 
     return VoteResponse(
         vote_type=vote_type,
