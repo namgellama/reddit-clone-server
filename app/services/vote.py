@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,6 +27,31 @@ async def get_by_user_id_and_comment_id(
     )
 
     return result.scalars().first()
+
+
+# Create
+async def create(
+    post_id: UUID | None,
+    comment_id: UUID | None,
+    type: VoteType,
+    user_id: UUID,
+    db: AsyncSession,
+):
+    if (post_id is None and comment_id is None) or (post_id and comment_id):
+        raise ValueError("Exactly one of post_id or comment_id must be provided")
+
+    new_vote = Vote(
+        post_id=post_id,
+        comment_id=comment_id,
+        type=type,
+        user_id=user_id,
+    )
+
+    db.add(new_vote)
+    await db.commit()
+    await db.refresh(new_vote)
+
+    return new_vote
 
 
 # Delete
@@ -60,16 +86,13 @@ async def toggle_post_vote(
             vote_type = vote.type
     else:
         # If vote doesn't exist, create new vote
-        new_vote = Vote(
-            type=body.type,
+        new_vote = await create(
             post_id=post_id,
             comment_id=None,
+            type=body.type,
             user_id=user_id,
+            db=db,
         )
-
-        db.add(new_vote)
-        await db.commit()
-        await db.refresh(new_vote)
 
         vote_type = new_vote.type
 
@@ -126,16 +149,13 @@ async def toggle_comment_vote(
             vote_type = vote.type
     else:
         # If vote doesn't exist, create new vote
-        new_vote = Vote(
-            type=body.type,
+        new_vote = await create(
             post_id=None,
             comment_id=comment_id,
+            type=body.type,
             user_id=user_id,
+            db=db,
         )
-
-        db.add(new_vote)
-        await db.commit()
-        await db.refresh(new_vote)
 
         vote_type = new_vote.type
 
