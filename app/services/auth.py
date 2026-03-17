@@ -86,6 +86,12 @@ async def login(
 
     set_cookie(
         response=response,
+        key="access_token",
+        value=access_token,
+        max_age=60 * 30,
+    )
+    set_cookie(
+        response=response,
         key="refresh_token",
         value=refresh_token,
         max_age=60 * 60 * 24 * 7,
