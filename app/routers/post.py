@@ -7,14 +7,14 @@ from app.database.db import get_db
 from app.schemas.post import (
     PostResponse,
     PostCreate,
+    PostCreateResponse,
     PostUpdate,
-    PostResponseWithCount,
 )
 from app.schemas.vote import VoteRequest, VoteResponse
 from app.services import post as post_service
 from app.services import vote as vote_service
 from app.services.image import ImageService
-from app.utils.security import CurrentUser
+from app.utils.security import CurrentUser, OptionalCurrentUser
 
 
 router = APIRouter()
@@ -27,9 +27,14 @@ router = APIRouter()
 """
 
 
-@router.get("/", response_model=list[PostResponseWithCount])
-async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
-    return await post_service.get_all(db)
+@router.get("/", response_model=list[PostResponse])
+async def get_posts(
+    current_user: OptionalCurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = current_user.id if current_user else None
+
+    return await post_service.get_all(user_id=user_id, db=db)
 
 
 """
@@ -40,9 +45,15 @@ async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.get("/{id}", response_model=PostResponseWithCount)
-async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await post_service.get_by_id(id=id, db=db)
+@router.get("/{id}", response_model=PostResponse)
+async def get_post(
+    id: UUID,
+    current_user: OptionalCurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = current_user.id if current_user else None
+
+    return await post_service.get_by_id(id=id, user_id=user_id, db=db)
 
 
 """
@@ -53,7 +64,9 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=PostCreateResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_post(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -78,7 +91,7 @@ async def create_post(
 """
 
 
-@router.patch("/{id}", response_model=PostResponse)
+@router.patch("/{id}", response_model=PostCreateResponse)
 async def update_post(
     id: UUID,
     current_user: CurrentUser,
