@@ -1,22 +1,20 @@
 from typing import Annotated, Optional
 from uuid import UUID
-from fastapi import APIRouter, Response, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
 from app.schemas.post import (
     PostResponse,
     PostCreate,
+    PostCreateResponse,
     PostUpdate,
-    PostResponseWithCount,
 )
-from app.schemas.upvote import UpvoteResponse
-from app.schemas.downvote import DownvoteResponse
+from app.schemas.vote import VoteRequest, VoteResponse
 from app.services import post as post_service
-from app.services import upvote as upvote_service
-from app.services import downvote as downvote_service
+from app.services import vote as vote_service
 from app.services.image import ImageService
-from app.utils.security import CurrentUser
+from app.utils.security import CurrentUser, OptionalCurrentUser
 
 
 router = APIRouter()
@@ -29,9 +27,14 @@ router = APIRouter()
 """
 
 
-@router.get("/", response_model=list[PostResponseWithCount])
-async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
-    return await post_service.get_all(db)
+@router.get("/", response_model=list[PostResponse])
+async def get_posts(
+    current_user: OptionalCurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = current_user.id if current_user else None
+
+    return await post_service.get_all(user_id=user_id, db=db)
 
 
 """
@@ -42,9 +45,15 @@ async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.get("/{id}", response_model=PostResponseWithCount)
-async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await post_service.get_by_id(id=id, db=db)
+@router.get("/{id}", response_model=PostResponse)
+async def get_post(
+    id: UUID,
+    current_user: OptionalCurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = current_user.id if current_user else None
+
+    return await post_service.get_by_id(id=id, user_id=user_id, db=db)
 
 
 """
@@ -55,7 +64,9 @@ async def get_post(id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
 """
 
 
-@router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=PostCreateResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_post(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -80,7 +91,7 @@ async def create_post(
 """
 
 
-@router.patch("/{id}", response_model=PostResponse)
+@router.patch("/{id}", response_model=PostCreateResponse)
 async def update_post(
     id: UUID,
     current_user: CurrentUser,
@@ -122,54 +133,20 @@ async def delete_post(
 
 
 """
-    @desc Toggle post upvote
-    @route POST /api/v1/posts/:id/upvotes
+    @desc Toggle post vote
+    @route POST /api/v1/posts/:id/votes
     @access Private
 
 """
 
 
-@router.post("/{id}/upvotes", response_model=UpvoteResponse)
-async def toggle_post_upvote(
+@router.post("/{id}/votes", response_model=VoteResponse)
+async def toggle_post_vote(
     id: UUID,
+    body: VoteRequest,
     current_user: CurrentUser,
-    response: Response,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    upvote = await upvote_service.toggle_post_upvote(id, current_user.id, db=db)
-
-    if upvote:
-        response.status_code = status.HTTP_201_CREATED
-
-        return {"upvoted": True, "message": "Post upvoted"}
-
-    response.status_code = status.HTTP_200_OK
-
-    return {"upvoted": False, "message": "Post upvote removed"}
-
-
-"""
-    @desc Toggle post downvote
-    @route POST /api/v1/posts/:id/downvotes
-    @access Private
-
-"""
-
-
-@router.post("/{id}/downvotes", response_model=DownvoteResponse)
-async def toggle_post_downvote(
-    id: UUID,
-    current_user: CurrentUser,
-    response: Response,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    upvote = await downvote_service.toggle_post_downvote(id, current_user.id, db=db)
-
-    if upvote:
-        response.status_code = status.HTTP_201_CREATED
-
-        return {"downvoted": True, "message": "Post downvoted"}
-
-    response.status_code = status.HTTP_200_OK
-
-    return {"downvoted": False, "message": "Post downvote removed"}
+    return await vote_service.toggle_post_vote(
+        post_id=id, body=body, user_id=current_user.id, db=db
+    )

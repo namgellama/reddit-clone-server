@@ -1,47 +1,89 @@
 from uuid import UUID
 from fastapi import HTTPException, status
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, case
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.post import Post
 from app.models.comment import Comment
-from app.models.upvote import Upvote
-from app.models.downvote import Downvote
+from app.models.vote import Vote, VoteType
 from app.schemas.post import PostCreate, PostUpdate
 from app.services.image import ImageService
 
 
+# Get user vote case
+def get_user_vote_case(user_id: UUID | None):
+    if user_id is not None:
+        return case(
+            (
+                Vote.user_id == user_id,
+                case(
+                    (Vote.type == VoteType.UPVOTE, 1),
+                    (Vote.type == VoteType.DOWNVOTE, -1),
+                    else_=0,
+                ),
+            ),
+        )
+
+    return 0
+
+
 # Get all
-async def get_all(db: AsyncSession):
+async def get_all(user_id: UUID | None, db: AsyncSession):
+
     stmt = (
         select(
             Post,
             func.count(distinct(Comment.id)).label("comment_count"),
-            func.count(distinct(Upvote.id)).label("upvote_count"),
-            func.count(distinct(Downvote.id)).label("downvote_count"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Vote.type == VoteType.UPVOTE, 1),
+                        (Vote.type == VoteType.DOWNVOTE, -1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("score"),
+            func.max(get_user_vote_case(user_id=user_id)).label("user_vote"),
         )
+        # User vote (0 = none, 1 = upvote, -1 = downvote)
         .outerjoin(Comment, Comment.post_id == Post.id)
-        .outerjoin(Upvote, Upvote.post_id == Post.id)
-        .outerjoin(Downvote, Downvote.post_id == Post.id)
-        .options(selectinload(Post.author))
+        .outerjoin(Vote, Vote.post_id == Post.id)
+        .options(selectinload(Post.user))
         .group_by(Post.id)
+        .order_by(Post.date_posted.desc())
     )
 
     result = await db.execute(stmt)
-    rows = result.all()
+    rows: list[tuple[Post, int, int, int]] = result.all()
 
-    return [
-        {
-            **post.__dict__,
-            "count": {
-                "comment": c_count,
-                "upvote": u_count,
-                "downvote": d_count,
-            },
-        }
-        for post, c_count, u_count, d_count in rows
-    ]
+    posts = []
+
+    for post, comment_count, score, user_vote in rows:
+        posts.append(
+            {
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "images": post.images,
+                "date_posted": post.date_posted,
+                "user": {
+                    "id": post.user.id,
+                    "username": post.user.username,
+                    "email": post.user.email,
+                },
+                "score": score,
+                "user_vote": (
+                    "UPVOTE"
+                    if user_vote == 1
+                    else "DOWNVOTE" if user_vote == -1 else None
+                ),
+                "comment_count": comment_count,
+            }
+        )
+
+    return posts
 
 
 # Fetch by id
@@ -56,37 +98,56 @@ async def fetch_by_id(id: UUID, db: AsyncSession):
 
 
 # Get by id
-async def get_by_id(id: UUID, db: AsyncSession):
+async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
+
     stmt = (
         select(
             Post,
             func.count(Comment.id).label("comment_count"),
-            func.count(Upvote.id).label("upvote_count"),
-            func.count(Downvote.id).label("downvote_count"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Vote.type == VoteType.UPVOTE, 1),
+                        (Vote.type == VoteType.DOWNVOTE, -1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("score"),
+            func.max(get_user_vote_case(user_id=user_id)).label("user_vote"),
         )
+        # User vote (0 = none, 1 = upvote, -1 = downvote)
         .outerjoin(Comment, Comment.post_id == Post.id)
-        .outerjoin(Upvote, Upvote.post_id == Post.id)
-        .outerjoin(Downvote, Downvote.post_id == Post.id)
-        .options(selectinload(Post.author))
+        .outerjoin(Vote, Vote.post_id == Post.id)
+        .options(selectinload(Post.user))
         .where(Post.id == id)
         .group_by(Post.id)
     )
 
     result = await db.execute(stmt)
-    row = result.first()
+    row: tuple[Post, int, int, int] = result.first()
 
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Post not found")
 
-    post, c_count, u_count, d_count = row
+    post, comment_count, score, user_vote = row
 
     return {
-        **post.__dict__,
-        "count": {
-            "comment": c_count,
-            "upvote": u_count,
-            "downvote": d_count,
+        "id": post.id,
+        "title": post.title,
+        "content": post.content,
+        "images": post.images,
+        "date_posted": post.date_posted,
+        "user": {
+            "id": post.user.id,
+            "username": post.user.username,
+            "email": post.user.email,
         },
+        "score": score,
+        "user_vote": (
+            "UPVOTE" if user_vote == 1 else "DOWNVOTE" if user_vote == -1 else None
+        ),
+        "comment_count": comment_count,
     }
 
 

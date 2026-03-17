@@ -1,4 +1,4 @@
-from typing import Literal, Annotated
+from typing import Literal, Annotated, Optional
 from datetime import datetime, timedelta, timezone
 import jwt
 from jwt import InvalidTokenError
@@ -16,6 +16,9 @@ from app.models.user import User
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+optional_oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="api/v1/auth/login", auto_error=False
+)
 
 password_hash = PasswordHash.recommended()
 
@@ -88,3 +91,38 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[UserResponse, Depends(get_current_user)]
+
+
+async def get_optional_current_user(
+    token: Annotated[Optional[str], Depends(optional_oauth2_scheme)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    if not token:
+        return None
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        id = decode_token(token, "access")
+
+        if id is None:
+            raise credentials_exception
+
+    except InvalidTokenError:
+        raise credentials_exception
+
+    result = await db.execute(select(User).where(User.id == id))
+    user = result.scalars().first()
+
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+OptionalCurrentUser = Annotated[
+    Optional[UserResponse], Depends(get_optional_current_user)
+]

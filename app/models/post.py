@@ -27,13 +27,10 @@ class Post(Base):
         ForeignKey("users.id"), nullable=False, index=True
     )
 
-    author: Mapped[User] = relationship(back_populates="posts")
+    user: Mapped[User] = relationship(back_populates="posts")
     comments: Mapped[list["Comment"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="post", cascade="all, delete-orphan"
     )
-    upvotes: Mapped[list["Upvote"]] = relationship(  # noqa: F821 # type: ignore
-        back_populates="post", cascade="all, delete-orphan"
-    )
-    downvotes: Mapped[list["Downvote"]] = relationship(  # noqa: F821 # type: ignore
+    votes: Mapped[list["Vote"]] = relationship(  # noqa: F821 # type: ignore
         back_populates="post", cascade="all, delete-orphan"
     )

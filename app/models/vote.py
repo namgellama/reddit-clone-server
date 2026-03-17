@@ -1,12 +1,7 @@
-from __future__ import annotations
 from uuid import uuid4
+import enum
 from datetime import UTC, datetime
-from sqlalchemy import (
-    DateTime,
-    ForeignKey,
-    CheckConstraint,
-    UniqueConstraint,
-)
+from sqlalchemy import DateTime, Enum, ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,8 +12,13 @@ from .comment import Comment
 from .user import User
 
 
-class Upvote(Base):
-    __tablename__ = "upvotes"
+class VoteType(str, enum.Enum):
+    UPVOTE = "UPVOTE"
+    DOWNVOTE = "DOWNVOTE"
+
+
+class Vote(Base):
+    __tablename__ = "votes"
 
     __table_args__ = (
         # Only one of post_id or comment_id must be NOT NULL
@@ -27,15 +27,16 @@ class Upvote(Base):
             "(post_id IS NULL AND comment_id IS NOT NULL)",
             name="check_only_one_target",
         ),
-        # Prevent duplicate upvotes on posts
-        UniqueConstraint("user_id", "post_id", name="unique_user_post_upvote"),
-        # Prevent duplicate upvotes on comments
-        UniqueConstraint("user_id", "comment_id", name="unique_user_comment_upvote"),
+        # Prevent duplicate votes on posts
+        UniqueConstraint("user_id", "post_id", name="unique_user_post_vote"),
+        # Prevent duplicate votes on comments
+        UniqueConstraint("user_id", "comment_id", name="unique_user_comment_vote"),
     )
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid4, index=True
     )
+    type: Mapped[VoteType] = mapped_column(Enum(VoteType), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
@@ -50,6 +51,6 @@ class Upvote(Base):
         ForeignKey("comments.id"), nullable=True, index=True
     )
 
-    user: Mapped[User] = relationship(back_populates="upvotes")
-    post: Mapped[Post] = relationship(back_populates="upvotes")
-    comment: Mapped[Comment] = relationship(back_populates="upvotes")
+    user: Mapped[User] = relationship(back_populates="votes")
+    post: Mapped[Post] = relationship(back_populates="votes")
+    comment: Mapped[Comment] = relationship(back_populates="votes")
