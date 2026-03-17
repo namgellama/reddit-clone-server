@@ -99,7 +99,6 @@ async def fetch_by_id(id: UUID, db: AsyncSession):
 
 # Get by id
 async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
-
     stmt = (
         select(
             Post,
