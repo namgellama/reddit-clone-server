@@ -51,6 +51,6 @@ class Vote(Base):
         ForeignKey("comments.id"), nullable=True, index=True
     )
 
-    user: Mapped[User] = relationship(back_populates="upvotes")
-    post: Mapped[Post] = relationship(back_populates="upvotes")
-    comment: Mapped[Comment] = relationship(back_populates="upvotes")
+    user: Mapped[User] = relationship(back_populates="votes")
+    post: Mapped[Post] = relationship(back_populates="votes")
+    comment: Mapped[Comment] = relationship(back_populates="votes")

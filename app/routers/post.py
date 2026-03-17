@@ -11,8 +11,10 @@ from app.schemas.post import (
     PostResponseWithCount,
 )
 from app.schemas.upvote import UpvoteResponse
+from app.schemas.vote import VoteRequest, VoteResponse
 from app.schemas.downvote import DownvoteResponse
 from app.services import post as post_service
+from app.services import vote as vote_service
 from app.services import upvote as upvote_service
 from app.services import downvote as downvote_service
 from app.services.image import ImageService
@@ -119,6 +121,27 @@ async def delete_post(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await post_service.delete(id=id, user_id=current_user.id, db=db)
+
+
+"""
+    @desc Toggle post vote
+    @route POST /api/v1/posts/:id/votes
+    @access Private
+
+"""
+
+
+@router.post("/{id}/votes", response_model=VoteResponse)
+async def toggle_post_votes(
+    id: UUID,
+    body: VoteRequest,
+    current_user: CurrentUser,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    return await vote_service.toggle_post_vote(
+        post_id=id, body=body, user_id=current_user.id, db=db
+    )
 
 
 """
