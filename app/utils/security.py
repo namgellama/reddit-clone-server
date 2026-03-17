@@ -3,8 +3,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from jwt import InvalidTokenError
 from pwdlib import PasswordHash
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Request, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,11 +13,6 @@ from app.schemas.user import UserResponse
 from app.database.db import get_db
 from app.models.user import User
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
-optional_oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="api/v1/auth/login", auto_error=False
-)
 
 password_hash = PasswordHash.recommended()
 
@@ -64,17 +58,21 @@ def decode_token(token: str, type: Literal["access", "refresh"]):
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
+    access_token = request.cookies.get("access_token")
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail="Unauthorized",
     )
 
+    if not access_token:
+        raise credentials_exception
+
     try:
-        id = decode_token(token, "access")
+        id = decode_token(access_token, "access")
 
         if id is None:
             raise credentials_exception
@@ -94,20 +92,21 @@ CurrentUser = Annotated[UserResponse, Depends(get_current_user)]
 
 
 async def get_optional_current_user(
-    token: Annotated[Optional[str], Depends(optional_oauth2_scheme)],
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    if not token:
+    access_token = request.cookies.get("access_token")
+
+    if not access_token:
         return None
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail="Unauthorized",
     )
 
     try:
-        id = decode_token(token, "access")
+        id = decode_token(access_token, "access")
 
         if id is None:
             raise credentials_exception
