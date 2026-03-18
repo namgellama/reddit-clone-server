@@ -117,6 +117,12 @@ async def auth_google(request: Request, db: Annotated[AsyncSession, Depends(get_
 
     set_cookie(
         response=redirect_response,
+        key="access_token",
+        value=data["access_token"],
+        max_age=60 * 30,
+    )
+    set_cookie(
+        response=redirect_response,
         key="refresh_token",
         value=data["refresh_token"],
         max_age=60 * 60 * 24 * 7,

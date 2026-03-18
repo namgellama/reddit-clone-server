@@ -135,6 +135,7 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)])
 
 # Logout
 def logout(response: Response):
+    delete_cookie(response=response, key="access_token")
     delete_cookie(response=response, key="refresh_token")
 
 
