@@ -140,7 +140,9 @@ def logout(response: Response):
 
 
 # Refresh token
-async def refresh_token(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
+async def refresh_token(
+    request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]
+):
     refresh_token = request.cookies.get("refresh_token")
 
     if not refresh_token:
@@ -164,5 +166,12 @@ async def refresh_token(request: Request, db: Annotated[AsyncSession, Depends(ge
         )
 
     access_token = create_token(data={"sub": str(db_user.id)}, type="access")
+
+    set_cookie(
+        response=response,
+        key="access_token",
+        value=access_token,
+        max_age=60 * 30,
+    )
 
     return {"access_token": access_token}
