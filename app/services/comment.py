@@ -1,17 +1,21 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 
 from app.models.comment import Comment
 from app.models.post import Post
+from app.models.vote import Vote, VoteType
 from app.schemas.comment import CommentCreate, CommentUpdate
 from app.services import post as post_service
 
 
+from . import vote as vote_service
+
+
 # Get all
-async def get_all(post_id: UUID, db: AsyncSession):
+async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
     result = await db.execute(select(Post).where(Post.id == post_id))
     existing_post = result.scalars().first()
 
@@ -20,12 +24,59 @@ async def get_all(post_id: UUID, db: AsyncSession):
             status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
         )
 
-    result = await db.execute(
-        select(Comment)
-        .options(selectinload(Comment.user))
+    stmt = (
+        select(
+            Comment,
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Vote.type == VoteType.UPVOTE, 1),
+                        (Vote.type == VoteType.DOWNVOTE, -1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("score"),
+            func.max(vote_service.get_user_vote_case(user_id=user_id)).label(
+                "user_vote"
+            ),
+        )
+        # User vote (0 = none, 1 = upvote, -1 = downvote)
         .where(Comment.post_id == post_id)
+        .outerjoin(Vote, Vote.comment_id == Comment.id)
+        .options(selectinload(Comment.user))
+        .group_by(Comment.id)
+        .order_by(Comment.created_at.desc())
     )
-    comments = result.scalars().all()
+
+    result = await db.execute(stmt)
+    rows: list[tuple[Comment, int, int]] = result.all()
+
+    comments = []
+
+    for comment, score, user_vote in rows:
+        comments.append(
+            {
+                "id": comment.id,
+                "content": comment.content,
+                "created_at": comment.created_at,
+                "updated_at": comment.updated_at,
+                "post_id": comment.post_id,
+                "parent_id": comment.parent_id,
+                "user": {
+                    "id": comment.user.id,
+                    "username": comment.user.username,
+                    "email": comment.user.email,
+                },
+                "score": score,
+                "user_vote": (
+                    "UPVOTE"
+                    if user_vote == 1
+                    else "DOWNVOTE" if user_vote == -1 else None
+                ),
+            }
+        )
+
     return comments
 
 
@@ -63,7 +114,7 @@ async def get_by_post_id_and_comment_id(
 
 # Create
 async def create(payload: CommentCreate, db: AsyncSession):
-    await post_service.get_by_id(id=payload.post_id, db=db)
+    await post_service.fetch_by_id(id=payload.post_id, db=db)
 
     new_comment = Comment(
         content=payload.content, post_id=payload.post_id, user_id=payload.user_id
