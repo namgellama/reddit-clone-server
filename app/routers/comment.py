@@ -12,8 +12,6 @@ from app.schemas.comment import (
     CommentBase,
     CommentUpdate,
 )
-from app.schemas.vote import VoteRequest, VoteResponse
-from app.services import vote as vote_service
 from app.utils.security import CurrentUser, OptionalCurrentUser
 
 router = APIRouter()
@@ -119,29 +117,4 @@ async def delete_comment(
 ):
     await comment_service.delete(
         post_id=post_id, comment_id=comment_id, user_id=current_user.id, db=db
-    )
-
-
-"""
-    @desc Toggle comment vote
-    @route POST /api/v1/posts/:post_id/comments/:comment_id/votes
-    @access Private
-
-"""
-
-
-@router.post("/{comment_id}/votes", response_model=VoteResponse)
-async def toggle_comment_vote(
-    post_id: UUID,
-    comment_id: UUID,
-    body: VoteRequest,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    return await vote_service.toggle_comment_vote(
-        post_id=post_id,
-        comment_id=comment_id,
-        body=body,
-        user_id=current_user.id,
-        db=db,
     )
