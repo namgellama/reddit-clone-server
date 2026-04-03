@@ -80,21 +80,8 @@ async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
     return comments
 
 
-# Get by id
-async def get_by_id(id: UUID, db: AsyncSession):
-    result = await db.execute(select(Comment).where(Comment.id == id))
-    existing_comment = result.scalars().first()
-
-    if not existing_comment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
-
-    return existing_comment
-
-
-# Get by post id and comment id
-async def get_by_post_id_and_comment_id(
+# Fetch by post id and comment id
+async def fetch_by_post_id_and_comment_id(
     post_id: UUID, comment_id: UUID, db: AsyncSession
 ):
     await post_service.fetch_by_id(id=post_id, db=db)
@@ -110,6 +97,65 @@ async def get_by_post_id_and_comment_id(
         )
 
     return existing_comment
+
+
+# Get by post id and comment id
+async def get_by_post_id_and_comment_id(
+    post_id: UUID, comment_id: UUID, user_id: UUID | None, db: AsyncSession
+):
+    await fetch_by_post_id_and_comment_id(post_id=post_id, comment_id=comment_id, db=db)
+
+    stmt = (
+        select(
+            Comment,
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Vote.type == VoteType.UPVOTE, 1),
+                        (Vote.type == VoteType.DOWNVOTE, -1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("score"),
+            func.max(vote_service.get_user_vote_case(user_id=user_id)).label(
+                "user_vote"
+            ),
+        )
+        .outerjoin(Vote, Vote.comment_id == Comment.id)
+        .options(selectinload(Comment.user))
+        .where(Comment.id == comment_id)
+        .group_by(Comment.id)
+    )
+
+    result = await db.execute(stmt)
+    row: tuple[Comment, int, int] | None = result.first()
+
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found",
+        )
+
+    comment, score, user_vote = row
+
+    return {
+        "id": comment.id,
+        "content": comment.content,
+        "created_at": comment.created_at,
+        "updated_at": comment.updated_at,
+        "post_id": comment.post_id,
+        "parent_id": comment.parent_id,
+        "user": {
+            "id": comment.user.id,
+            "username": comment.user.username,
+            "email": comment.user.email,
+        },
+        "score": score,
+        "user_vote": (
+            "UPVOTE" if user_vote == 1 else "DOWNVOTE" if user_vote == -1 else None
+        ),
+    }
 
 
 # Create
@@ -128,7 +174,7 @@ async def create(payload: CommentCreate, db: AsyncSession):
 
 # Update
 async def update(payload: CommentUpdate, db: AsyncSession):
-    comment = await get_by_post_id_and_comment_id(
+    comment = await fetch_by_post_id_and_comment_id(
         post_id=payload.post_id, comment_id=payload.id, db=db
     )
 
@@ -147,7 +193,7 @@ async def update(payload: CommentUpdate, db: AsyncSession):
 
 # Delete
 async def delete(post_id: UUID, comment_id: UUID, user_id: UUID, db: AsyncSession):
-    comment = await get_by_post_id_and_comment_id(
+    comment = await fetch_by_post_id_and_comment_id(
         post_id=post_id, comment_id=comment_id, db=db
     )
 

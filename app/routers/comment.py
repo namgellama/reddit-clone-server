@@ -46,10 +46,15 @@ async def get_comments(
 
 @router.get("/{comment_id}", response_model=CommentResponse)
 async def get_comment(
-    post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]
+    current_user: OptionalCurrentUser,
+    post_id: UUID,
+    comment_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
+    user_id = current_user.id if current_user else None
+
     return await comment_service.get_by_post_id_and_comment_id(
-        post_id=post_id, comment_id=comment_id, db=db
+        post_id=post_id, comment_id=comment_id, user_id=user_id, db=db
     )
 
 

@@ -112,7 +112,7 @@ async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
     )
 
     result = await db.execute(stmt)
-    row: tuple[Post, int, int, int] = result.first()
+    row: tuple[Post, int, int, int] | None = result.first()
 
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Post not found")
