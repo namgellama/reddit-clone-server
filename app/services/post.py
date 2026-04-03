@@ -8,29 +8,13 @@ from app.models.post import Post
 from app.models.comment import Comment
 from app.models.vote import Vote, VoteType
 from app.schemas.post import PostCreate, PostUpdate
-from app.services.image import ImageService
 
-
-# Get user vote case
-def get_user_vote_case(user_id: UUID | None):
-    if user_id is not None:
-        return case(
-            (
-                Vote.user_id == user_id,
-                case(
-                    (Vote.type == VoteType.UPVOTE, 1),
-                    (Vote.type == VoteType.DOWNVOTE, -1),
-                    else_=0,
-                ),
-            ),
-        )
-
-    return 0
+from . import vote as vote_service
+from .image import ImageService
 
 
 # Get all
 async def get_all(user_id: UUID | None, db: AsyncSession):
-
     stmt = (
         select(
             Post,
@@ -45,7 +29,9 @@ async def get_all(user_id: UUID | None, db: AsyncSession):
                 ),
                 0,
             ).label("score"),
-            func.max(get_user_vote_case(user_id=user_id)).label("user_vote"),
+            func.max(vote_service.get_user_vote_case(user_id=user_id)).label(
+                "user_vote"
+            ),
         )
         # User vote (0 = none, 1 = upvote, -1 = downvote)
         .outerjoin(Comment, Comment.post_id == Post.id)
@@ -113,7 +99,9 @@ async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
                 ),
                 0,
             ).label("score"),
-            func.max(get_user_vote_case(user_id=user_id)).label("user_vote"),
+            func.max(vote_service.get_user_vote_case(user_id=user_id)).label(
+                "user_vote"
+            ),
         )
         # User vote (0 = none, 1 = upvote, -1 = downvote)
         .outerjoin(Comment, Comment.post_id == Post.id)
@@ -124,7 +112,7 @@ async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
     )
 
     result = await db.execute(stmt)
-    row: tuple[Post, int, int, int] = result.first()
+    row: tuple[Post, int, int, int] | None = result.first()
 
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Post not found")

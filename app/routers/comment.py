@@ -7,13 +7,12 @@ from app.database.db import get_db
 from app.services import comment as comment_service
 from app.schemas.comment import (
     CommentResponse,
+    CommentCreateResponse,
     CommentCreate,
     CommentBase,
     CommentUpdate,
 )
-from app.schemas.vote import VoteRequest, VoteResponse
-from app.services import vote as vote_service
-from app.utils.security import CurrentUser
+from app.utils.security import CurrentUser, OptionalCurrentUser
 
 router = APIRouter()
 
@@ -27,8 +26,14 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[CommentResponse])
-async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await comment_service.get_all(post_id=post_id, db=db)
+async def get_comments(
+    current_user: OptionalCurrentUser,
+    post_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = current_user.id if current_user else None
+
+    return await comment_service.get_all(post_id=post_id, user_id=user_id, db=db)
 
 
 """
@@ -41,10 +46,15 @@ async def get_comments(post_id: UUID, db: Annotated[AsyncSession, Depends(get_db
 
 @router.get("/{comment_id}", response_model=CommentResponse)
 async def get_comment(
-    post_id: UUID, comment_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]
+    current_user: OptionalCurrentUser,
+    post_id: UUID,
+    comment_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
+    user_id = current_user.id if current_user else None
+
     return await comment_service.get_by_post_id_and_comment_id(
-        post_id=post_id, comment_id=comment_id, db=db
+        post_id=post_id, comment_id=comment_id, user_id=user_id, db=db
     )
 
 
@@ -56,7 +66,9 @@ async def get_comment(
 """
 
 
-@router.post("/", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=CommentCreateResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_comment(
     post_id: UUID,
     body: CommentBase,
@@ -78,7 +90,7 @@ async def create_comment(
 """
 
 
-@router.patch("/${comment_id}", response_model=CommentResponse)
+@router.patch("/${comment_id}", response_model=CommentCreateResponse)
 async def update_comment(
     post_id: UUID,
     comment_id: UUID,
@@ -110,29 +122,4 @@ async def delete_comment(
 ):
     await comment_service.delete(
         post_id=post_id, comment_id=comment_id, user_id=current_user.id, db=db
-    )
-
-
-"""
-    @desc Toggle comment vote
-    @route POST /api/v1/posts/:post_id/comments/:comment_id/votes
-    @access Private
-
-"""
-
-
-@router.post("/{comment_id}/votes", response_model=VoteResponse)
-async def toggle_comment_vote(
-    post_id: UUID,
-    comment_id: UUID,
-    body: VoteRequest,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    return await vote_service.toggle_comment_vote(
-        post_id=post_id,
-        comment_id=comment_id,
-        body=body,
-        user_id=current_user.id,
-        db=db,
     )

@@ -182,3 +182,20 @@ async def toggle_comment_vote(
         vote_type=vote_type,
         score=score,
     )
+
+
+# Get user vote case
+def get_user_vote_case(user_id: UUID | None):
+    if user_id is not None:
+        return case(
+            (
+                Vote.user_id == user_id,
+                case(
+                    (Vote.type == VoteType.UPVOTE, 1),
+                    (Vote.type == VoteType.DOWNVOTE, -1),
+                    else_=0,
+                ),
+            ),
+        )
+
+    return 0
