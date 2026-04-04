@@ -19,15 +19,15 @@ router = APIRouter()
 """
 
 
-@router.post("/{id}/votes", response_model=VoteResponse)
+@router.post("/votes", response_model=VoteResponse)
 async def toggle_post_vote(
-    id: UUID,
+    post_id: UUID,
     body: VoteRequest,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     return await vote_service.toggle_post_vote(
-        post_id=id, body=body, user_id=current_user.id, db=db
+        post_id=post_id, body=body, user_id=current_user.id, db=db
     )
 
 
