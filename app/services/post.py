@@ -149,7 +149,7 @@ async def create(payload: PostCreate, db: AsyncSession):
 
     db.add(new_post)
     await db.commit()
-    await db.refresh(new_post, attribute_names=["author"])
+    await db.refresh(new_post, attribute_names=["user"])
 
     return new_post
 
@@ -175,7 +175,7 @@ async def update(payload: PostUpdate, db: AsyncSession):
         post.images = previous_images + new_images
 
     await db.commit()
-    await db.refresh(post, attribute_names=["author"])
+    await db.refresh(post, attribute_names=["user"])
 
     if len(previous_images) > 0:
         for image in old_images:
