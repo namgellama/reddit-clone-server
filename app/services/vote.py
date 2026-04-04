@@ -140,7 +140,7 @@ async def toggle_comment_vote(
     post_id: UUID, comment_id: UUID, body: VoteRequest, user_id: UUID, db: AsyncSession
 ):
     # Check if post and comment exists
-    await comment_service.get_by_post_id_and_comment_id(
+    await comment_service.fetch_by_post_id_and_comment_id(
         post_id=post_id, comment_id=comment_id, db=db
     )
 
