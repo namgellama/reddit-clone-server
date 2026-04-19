@@ -52,7 +52,7 @@ async def create(payload: UserCreate, db: Annotated[AsyncSession, Depends(get_db
             status_code=status.HTTP_409_CONFLICT, detail="Username already exists"
         )
 
-    email = await get_by_email(email=payload.email)
+    email = await get_by_email(email=payload.email, db=db)
 
     if email:
         raise HTTPException(

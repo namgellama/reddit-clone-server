@@ -42,7 +42,7 @@ async def get_all(user_id: UUID | None, db: AsyncSession):
     )
 
     result = await db.execute(stmt)
-    rows: list[tuple[Post, int, int, int]] = result.all()
+    rows = result.all()
 
     posts = []
 
@@ -112,7 +112,7 @@ async def get_by_id(id: UUID, user_id: UUID | None, db: AsyncSession):
     )
 
     result = await db.execute(stmt)
-    row: tuple[Post, int, int, int] | None = result.first()
+    row = result.first()
 
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Post not found")
@@ -190,7 +190,7 @@ async def update(payload: PostUpdate, db: AsyncSession):
 
 # Delete
 async def delete(id: UUID, user_id: UUID, db: AsyncSession):
-    post = await get_by_id(id=id, db=db)
+    post = await fetch_by_id(id=id, db=db)
 
     if post.user_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")

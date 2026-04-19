@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_mail import NameEmail
 
 from app.database.db import get_db
 from app.utils.security import verify_password, create_token, decode_token
@@ -33,7 +34,7 @@ async def register_email(
 
     await mail.send_mail(
         subject="Verify your email",
-        recipients=[payload.email],
+        recipients=[NameEmail(email=payload.email, name=payload.email.split("@")[0])],
         body=f"""
              <h2>Email Verification</h2>
                 <p>Your OTP:</p>
@@ -78,7 +79,11 @@ async def login(
 
     user = await user_service.get_by_email(email=form_data.username, db=db)
 
-    if not user or not verify_password(form_data.password, user.password):
+    if (
+        not user
+        or not user.password
+        or not verify_password(form_data.password, user.password)
+    ):
         raise credentials_exception
 
     access_token = create_token(data={"sub": str(user.id)}, type="access")
@@ -110,8 +115,9 @@ async def google_callback(request, db: Annotated[AsyncSession, Depends(get_db)])
         )
 
     user_info = user_response.get("userinfo")
+    print("user_info", user_info)
 
-    google_user = GoogleUser(**user_info)
+    google_user = GoogleUser.model_validate(user_info)
 
     existing_user = await user_service.get_by_email(str(google_user.email), db)
 
