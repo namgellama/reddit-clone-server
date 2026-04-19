@@ -37,4 +37,4 @@ class Settings(BaseSettings):
     max_upload_length: int = 3
 
 
-settings = Settings()
+settings = Settings()  # type: ignore

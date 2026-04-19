@@ -50,7 +50,7 @@ async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
     )
 
     result = await db.execute(stmt)
-    rows: list[tuple[Comment, int, int]] = result.all()
+    rows = result.all()
 
     comments = []
 
@@ -129,7 +129,7 @@ async def get_by_post_id_and_comment_id(
     )
 
     result = await db.execute(stmt)
-    row: tuple[Comment, int, int] | None = result.first()
+    row = result.first()
 
     if not row:
         raise HTTPException(
