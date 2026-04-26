@@ -3,6 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 from .user import UserResponse
+from .response import PaginatedResponse
 
 
 class PostBase(BaseModel):
@@ -54,3 +55,7 @@ class PostResponse(PostCreateResponse):
     score: int
     user_vote: str | None
     comment_count: int
+
+
+class PaginatedPostResponse(PaginatedResponse):
+    data: list[PostResponse]

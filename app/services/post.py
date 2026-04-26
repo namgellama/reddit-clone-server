@@ -14,7 +14,10 @@ from .image import ImageService
 
 
 # Get all
-async def get_all(user_id: UUID | None, db: AsyncSession):
+async def get_all(user_id: UUID | None, db: AsyncSession, skip: int, limit: int):
+    count_result = await db.execute(select(func.count()).select_from(Post))
+    total = count_result.scalar() or 0
+
     stmt = (
         select(
             Post,
@@ -39,6 +42,8 @@ async def get_all(user_id: UUID | None, db: AsyncSession):
         .options(selectinload(Post.user))
         .group_by(Post.id)
         .order_by(Post.date_posted.desc())
+        .offset(skip)
+        .limit(limit)
     )
 
     result = await db.execute(stmt)
@@ -69,7 +74,15 @@ async def get_all(user_id: UUID | None, db: AsyncSession):
             }
         )
 
-    return posts
+    has_more = skip + len(posts) < total
+
+    return {
+        "data": posts,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "has_more": has_more,
+    }
 
 
 # Fetch by id
