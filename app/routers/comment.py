@@ -9,6 +9,7 @@ from app.schemas.comment import (
     CommentResponse,
     CommentCreateResponse,
     CommentCreate,
+    ReplyCreate,
     CommentBase,
     CommentUpdate,
 )
@@ -80,6 +81,36 @@ async def create_comment(
     )
 
     return await comment_service.create(payload=payload, db=db)
+
+
+"""
+    @desc Create a reply
+    @route POST /api/v1/posts/:post_id/comments/:comment_id/replies
+    @access Private
+
+"""
+
+
+@router.post(
+    "/{comment_id}/replies",
+    response_model=CommentCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_reply(
+    post_id: UUID,
+    comment_id: UUID,
+    body: CommentBase,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    payload = ReplyCreate(
+        **body.model_dump(),
+        user_id=current_user.id,
+        post_id=post_id,
+        comment_id=comment_id
+    )
+
+    return await comment_service.reply(payload=payload, db=db)
 
 
 """

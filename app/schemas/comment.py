@@ -14,6 +14,12 @@ class CommentCreate(CommentBase):
     post_id: UUID
 
 
+class ReplyCreate(CommentBase):
+    user_id: UUID
+    post_id: UUID
+    comment_id: UUID
+
+
 class CommentUpdate(CommentCreate):
     id: UUID
 
@@ -30,6 +36,16 @@ class CommentCreateResponse(BaseModel):
     parent_id: UUID | None
 
 
+class ReplyResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    content: str
+    created_at: datetime
+    user: UserResponse
+
+
 class CommentResponse(CommentCreateResponse):
     score: int
     user_vote: str | None
+    replies: list[ReplyResponse]

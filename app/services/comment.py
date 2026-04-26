@@ -7,7 +7,7 @@ from uuid import UUID
 from app.models.comment import Comment
 from app.models.post import Post
 from app.models.vote import Vote, VoteType
-from app.schemas.comment import CommentCreate, CommentUpdate
+from app.schemas.comment import CommentCreate, CommentUpdate, ReplyCreate
 from app.services import post as post_service
 
 
@@ -123,7 +123,7 @@ async def get_by_post_id_and_comment_id(
             ),
         )
         .outerjoin(Vote, Vote.comment_id == Comment.id)
-        .options(selectinload(Comment.user))
+        .options(selectinload(Comment.user), selectinload(Comment.replies))
         .where(Comment.id == comment_id)
         .group_by(Comment.id)
     )
@@ -155,6 +155,19 @@ async def get_by_post_id_and_comment_id(
         "user_vote": (
             "UPVOTE" if user_vote == 1 else "DOWNVOTE" if user_vote == -1 else None
         ),
+        "replies": [
+            {
+                "id": reply.id,
+                "content": reply.content,
+                "created_at": reply.created_at,
+                "user": {
+                    "id": reply.user.id,
+                    "username": reply.user.username,
+                    "email": reply.user.email,
+                },
+            }
+            for reply in comment.replies
+        ],
     }
 
 
@@ -169,7 +182,28 @@ async def create(payload: CommentCreate, db: AsyncSession):
     db.add(new_comment)
     await db.commit()
     await db.refresh(new_comment)
+
     return new_comment
+
+
+# Reply
+async def reply(payload: ReplyCreate, db: AsyncSession):
+    await fetch_by_post_id_and_comment_id(
+        post_id=payload.post_id, comment_id=payload.comment_id, db=db
+    )
+
+    new_reply = Comment(
+        content=payload.content,
+        post_id=payload.post_id,
+        user_id=payload.user_id,
+        parent_id=payload.comment_id,
+    )
+
+    db.add(new_reply)
+    await db.commit()
+    await db.refresh(new_reply)
+
+    return new_reply
 
 
 # Update
@@ -188,6 +222,7 @@ async def update(payload: CommentUpdate, db: AsyncSession):
 
     await db.commit()
     await db.refresh(comment)
+
     return comment
 
 
