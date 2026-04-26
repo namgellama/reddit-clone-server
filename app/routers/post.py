@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
@@ -9,6 +9,7 @@ from app.schemas.post import (
     PostCreate,
     PostCreateResponse,
     PostUpdate,
+    PaginatedPostResponse,
 )
 from app.services import post as post_service
 from app.services.image import ImageService
@@ -25,14 +26,16 @@ router = APIRouter()
 """
 
 
-@router.get("/", response_model=list[PostResponse])
+@router.get("/", response_model=PaginatedPostResponse)
 async def get_posts(
     current_user: OptionalCurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
 ):
     user_id = current_user.id if current_user else None
 
-    return await post_service.get_all(user_id=user_id, db=db)
+    return await post_service.get_all(user_id=user_id, db=db, skip=skip, limit=limit)
 
 
 """
