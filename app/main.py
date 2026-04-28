@@ -19,7 +19,7 @@ from app.routers import vote
 async def lifespan(_app: FastAPI):
     # Startup
     try:
-        await redis_client.ping()
+        await redis_client.ping()  # type: ignore
         print("✅ Redis connected")
     except Exception as e:
         print("❌ Redis connection failed:", e)

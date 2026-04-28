@@ -45,7 +45,7 @@ async def get_comments(
 """
 
 
-@router.get("/{comment_id}/replies", response_model=CommentResponse)
+@router.get("/{comment_id}", response_model=CommentResponse)
 async def get_comment(
     current_user: OptionalCurrentUser,
     post_id: UUID,
@@ -121,7 +121,7 @@ async def create_reply(
 """
 
 
-@router.patch("/${comment_id}", response_model=CommentCreateResponse)
+@router.patch("/{comment_id}", response_model=CommentCreateResponse)
 async def update_comment(
     post_id: UUID,
     comment_id: UUID,
@@ -144,7 +144,7 @@ async def update_comment(
 """
 
 
-@router.delete("/${comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(
     post_id: UUID,
     comment_id: UUID,
