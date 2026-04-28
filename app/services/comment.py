@@ -21,7 +21,8 @@ async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
 
     if not existing_post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found",
         )
 
     stmt = (
@@ -41,7 +42,6 @@ async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
                 "user_vote"
             ),
         )
-        # User vote (0 = none, 1 = upvote, -1 = downvote)
         .where(Comment.post_id == post_id)
         .outerjoin(Vote, Vote.comment_id == Comment.id)
         .options(selectinload(Comment.user))
@@ -52,32 +52,46 @@ async def get_all(post_id: UUID, user_id: UUID | None, db: AsyncSession):
     result = await db.execute(stmt)
     rows = result.all()
 
-    comments = []
+    comment_map = {}
 
     for comment, score, user_vote in rows:
-        comments.append(
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "created_at": comment.created_at,
-                "updated_at": comment.updated_at,
-                "post_id": comment.post_id,
-                "parent_id": comment.parent_id,
-                "user": {
-                    "id": comment.user.id,
-                    "username": comment.user.username,
-                    "email": comment.user.email,
-                },
-                "score": score,
-                "user_vote": (
-                    "UPVOTE"
-                    if user_vote == 1
-                    else "DOWNVOTE" if user_vote == -1 else None
-                ),
-            }
-        )
+        comment_map[comment.id] = {
+            "id": comment.id,
+            "content": comment.content,
+            "created_at": comment.created_at,
+            "updated_at": comment.updated_at,
+            "post_id": comment.post_id,
+            "parent_id": comment.parent_id,
+            "user": {
+                "id": comment.user.id,
+                "username": comment.user.username,
+                "email": comment.user.email,
+            },
+            "score": score,
+            "user_vote": (
+                "UPVOTE" if user_vote == 1 else "DOWNVOTE" if user_vote == -1 else None
+            ),
+            "replies": [],
+        }
 
-    return comments
+    root_comments = []
+
+    for comment_id, comment in comment_map.items():
+        if comment["parent_id"]:
+            parent = comment_map.get(comment["parent_id"])
+            if parent:
+                parent["replies"].append(comment)
+        else:
+            root_comments.append(comment)
+
+    def sort_replies(comments):
+        for c in comments:
+            c["replies"].sort(key=lambda x: x["created_at"])
+            sort_replies(c["replies"])
+
+    sort_replies(root_comments)
+
+    return root_comments
 
 
 # Fetch by post id and comment id

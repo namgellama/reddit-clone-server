@@ -45,7 +45,7 @@ async def get_comments(
 """
 
 
-@router.get("/{comment_id}", response_model=CommentResponse)
+@router.get("/{comment_id}/replies", response_model=CommentResponse)
 async def get_comment(
     current_user: OptionalCurrentUser,
     post_id: UUID,
