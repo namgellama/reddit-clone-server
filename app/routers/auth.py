@@ -1,5 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Response, Request
+from fastapi import (
+    APIRouter,
+    Depends,
+    BackgroundTasks,
+    HTTPException,
+    Response,
+    Request,
+)
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +19,6 @@ from app.services import auth as auth_service
 from app.config.oauth import oauth
 from app.config.env import settings
 from app.utils.cookie import set_cookie
-
 
 router = APIRouter()
 
@@ -27,11 +33,13 @@ router = APIRouter()
 
 @router.post("/register-email", response_model=SimpleApiResponse)
 async def register_email(
-    body: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]
+    body: RegisterEmail,
+    background_tasks: BackgroundTasks,
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    await auth_service.register_email(payload=body, db=db)
-
-    return {"message": "Otp has been sent to your email."}
+    return await auth_service.register_email(
+        payload=body, background_tasks=background_tasks, db=db
+    )
 
 
 """
