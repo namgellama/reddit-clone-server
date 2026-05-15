@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, status, Response, Request
+from fastapi import Depends, HTTPException, BackgroundTasks, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
@@ -20,7 +20,9 @@ from . import user as user_service
 
 # Register email
 async def register_email(
-    payload: RegisterEmail, db: Annotated[AsyncSession, Depends(get_db)]
+    payload: RegisterEmail,
+    background_tasks: BackgroundTasks,
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     email = await user_service.get_by_email(email=payload.email, db=db)
 
@@ -32,8 +34,9 @@ async def register_email(
     otp = generate_otp()
     await store_otp(f"otp:{payload.email}", 300, otp)
 
-    await mail.send_mail(
-        subject="Verify your email",
+    background_tasks.add_task(
+        mail.send_mail,
+        subject="Verify you email",
         recipients=[NameEmail(email=payload.email, name=payload.email.split("@")[0])],
         body=f"""
              <h2>Email Verification</h2>
@@ -42,6 +45,8 @@ async def register_email(
                 <p>Expires in 10 minutes.</p>
         """,
     )
+
+    return {"message": "OTP sent successfully"}
 
 
 # Verify email
